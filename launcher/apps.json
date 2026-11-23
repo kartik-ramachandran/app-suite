@@ -1,0 +1,472 @@
+{
+  "apps": [
+    {
+      "slug": "plant-doctor",
+      "title": "Plant Doctor",
+      "blurb": "Snap a plant to identify it, diagnose problems, and get a care plan with watering reminders.",
+      "icon": "bi-flower1",
+      "fePort": 5280,
+      "bePort": 5330,
+      "palette": [
+        "#16a34a",
+        "#15803d",
+        "#f59e0b"
+      ],
+      "pages": [
+        {
+          "path": "/plant-doctor"
+        }
+      ]
+    },
+    {
+      "slug": "card-scanner",
+      "title": "Card Scanner",
+      "blurb": "Snap a business card and get a ready-to-save contact.",
+      "icon": "bi-person-vcard",
+      "fePort": 5281,
+      "bePort": 5331,
+      "palette": [
+        "#2563eb",
+        "#1d4ed8",
+        "#f97316"
+      ],
+      "pages": [
+        {
+          "path": "/card-scanner"
+        }
+      ]
+    },
+    {
+      "slug": "label-scanner",
+      "title": "Label Scanner",
+      "blurb": "Snap a food or product label and get a verdict against your diet and allergies.",
+      "icon": "bi-upc-scan",
+      "fePort": 5282,
+      "bePort": 5332,
+      "palette": [
+        "#0d9488",
+        "#0f766e",
+        "#f43f5e"
+      ],
+      "pages": [
+        {
+          "path": "/label-scanner"
+        }
+      ]
+    },
+    {
+      "slug": "price-checker",
+      "title": "Price Checker",
+      "blurb": "Snap a product and compare what it costs elsewhere.",
+      "icon": "bi-tag",
+      "fePort": 5283,
+      "bePort": 5333,
+      "palette": [
+        "#ea580c",
+        "#c2410c",
+        "#2563eb"
+      ],
+      "pages": [
+        {
+          "path": "/price-checker"
+        }
+      ]
+    },
+    {
+      "slug": "room-redesign",
+      "title": "Room Redesign",
+      "blurb": "Photograph a room and get a redesign plan.",
+      "icon": "bi-house-door",
+      "fePort": 5284,
+      "bePort": 5334,
+      "palette": [
+        "#a16207",
+        "#854d0e",
+        "#0d9488"
+      ],
+      "pages": [
+        {
+          "path": "/room-redesign"
+        }
+      ]
+    },
+    {
+      "slug": "email-tasks",
+      "title": "Email Tasks",
+      "blurb": "Turn an email or screenshot into a clean task list.",
+      "icon": "bi-list-check",
+      "fePort": 5285,
+      "bePort": 5335,
+      "palette": [
+        "#4f46e5",
+        "#4338ca",
+        "#f59e0b"
+      ],
+      "pages": [
+        {
+          "path": "/email-tasks"
+        }
+      ]
+    },
+    {
+      "slug": "whiteboard",
+      "title": "Whiteboard Digitizer",
+      "blurb": "Turn a photo of a whiteboard or handwritten page into clean notes and action items.",
+      "icon": "bi-easel",
+      "fePort": 5286,
+      "bePort": 5336,
+      "palette": [
+        "#0891b2",
+        "#0e7490",
+        "#f97316"
+      ],
+      "pages": [
+        {
+          "path": "/whiteboard"
+        }
+      ]
+    },
+    {
+      "slug": "event-planner",
+      "title": "Event Planner",
+      "blurb": "Plan events, find gifts, and draft proposals with AI.",
+      "icon": "bi-calendar-event",
+      "fePort": 5287,
+      "bePort": 5337,
+      "palette": [
+        "#db2777",
+        "#be185d",
+        "#7c3aed"
+      ],
+      "pages": [
+        {
+          "path": "/event-planner"
+        }
+      ]
+    },
+    {
+      "slug": "kitchen-manager",
+      "title": "Kitchen Manager",
+      "blurb": "Your pantry, your recipes, and allergy-aware cooking in one place.",
+      "icon": "bi-cup-hot",
+      "fePort": 5276,
+      "bePort": 5323,
+      "palette": [
+        "#16a34a",
+        "#15803d",
+        "#f59e0b"
+      ],
+      "pages": [
+        {
+          "path": "/kitchen"
+        }
+      ]
+    },
+    {
+      "slug": "money-manager",
+      "title": "Money Manager",
+      "blurb": "Bills, receipts, expenses, and warranties \u2014 snapped once and tracked for you.",
+      "icon": "bi-receipt",
+      "fePort": 5277,
+      "bePort": 5324,
+      "palette": [
+        "#d97706",
+        "#b45309",
+        "#059669"
+      ],
+      "pages": [
+        {
+          "path": "/bills"
+        }
+      ]
+    },
+    {
+      "slug": "study-manager",
+      "title": "Study Manager",
+      "blurb": "Turn any topic or notes into 50 learning formats with spaced-repetition review.",
+      "icon": "bi-mortarboard",
+      "fePort": 5278,
+      "bePort": 5325,
+      "palette": [
+        "#4f46e5",
+        "#4338ca",
+        "#f59e0b"
+      ],
+      "pages": [
+        {
+          "path": "/study"
+        }
+      ]
+    },
+    {
+      "slug": "life-manager",
+      "title": "Life Manager",
+      "blurb": "Check-ins, goals, decisions, relationships, voice journal, and your medicine cabinet.",
+      "icon": "bi-heart-pulse",
+      "fePort": 5279,
+      "bePort": 5326,
+      "palette": [
+        "#e11d48",
+        "#be123c",
+        "#0d9488"
+      ],
+      "pages": [
+        {
+          "path": "/life-tracker"
+        }
+      ]
+    },
+    {
+      "slug": "book-reader",
+      "title": "Book Reader",
+      "blurb": "Upload a book and hear it read in a cast of character voices.",
+      "icon": "bi-book",
+      "fePort": 5288,
+      "bePort": 5338,
+      "palette": [
+        "#7c3aed",
+        "#6d28d9",
+        "#f59e0b"
+      ],
+      "pages": [
+        {
+          "path": "/book-reader"
+        }
+      ]
+    },
+    {
+      "slug": "meeting-manager",
+      "title": "Meeting Manager",
+      "blurb": "Calendar sync, live meeting capture, follow-ups, and availability.",
+      "icon": "bi-calendar3",
+      "fePort": 5289,
+      "bePort": 5339,
+      "palette": [
+        "#2563eb",
+        "#1d4ed8",
+        "#14b8a6"
+      ],
+      "pages": [
+        {
+          "path": "/calendar"
+        }
+      ]
+    },
+    {
+      "slug": "interaction-intelligence",
+      "title": "Interaction Intelligence",
+      "blurb": "Turn any recorded call or consult into transcripts, summaries, and next steps.",
+      "icon": "bi-chat-dots",
+      "fePort": 5290,
+      "bePort": 5340,
+      "palette": [
+        "#0891b2",
+        "#0e7490",
+        "#8b5cf6"
+      ],
+      "pages": [
+        {
+          "path": "/interaction-intelligence"
+        }
+      ]
+    },
+    {
+      "slug": "prism",
+      "title": "Prism",
+      "blurb": "Upload a messy spreadsheet and let AI agents profile, map, and clean it.",
+      "icon": "bi-diagram-3",
+      "fePort": 5291,
+      "bePort": 5341,
+      "palette": [
+        "#7c3aed",
+        "#6d28d9",
+        "#06b6d4"
+      ],
+      "pages": [
+        {
+          "path": "/prism"
+        }
+      ]
+    },
+    {
+      "slug": "pdf-tools",
+      "title": "PDF Tools",
+      "blurb": "Convert, merge, compare, fill, redact and archive PDFs.",
+      "icon": "bi-file-earmark-pdf",
+      "fePort": 5292,
+      "bePort": 5342,
+      "palette": [
+        "#dc2626",
+        "#b91c1c",
+        "#2563eb"
+      ],
+      "pages": [
+        {
+          "path": "/pdf-tools"
+        }
+      ]
+    },
+    {
+      "slug": "emmd-studio",
+      "title": "EMMD Studio",
+      "blurb": "Write, seal, and verify Enhanced Markdown documents.",
+      "icon": "bi-file-earmark-richtext",
+      "fePort": 5293,
+      "bePort": 5343,
+      "palette": [
+        "#0f766e",
+        "#115e59",
+        "#f59e0b"
+      ],
+      "pages": [
+        {
+          "path": "/emmd"
+        }
+      ]
+    },
+    {
+      "slug": "cosmos",
+      "title": "Cosmos",
+      "blurb": "Your knowledge cosmos: everything you capture, linked into one graph.",
+      "icon": "bi-globe",
+      "fePort": 5294,
+      "bePort": 5344,
+      "palette": [
+        "#4f46e5",
+        "#4338ca",
+        "#ec4899"
+      ],
+      "pages": [
+        {
+          "path": "/cosmos"
+        }
+      ]
+    },
+    {
+      "slug": "research",
+      "title": "Research Lab",
+      "blurb": "Deep research and agent swarms on any question.",
+      "icon": "bi-search",
+      "fePort": 5295,
+      "bePort": 5345,
+      "palette": [
+        "#0369a1",
+        "#075985",
+        "#f97316"
+      ],
+      "pages": [
+        {
+          "path": "/research"
+        }
+      ]
+    },
+    {
+      "slug": "agent-hub",
+      "title": "Agent Hub",
+      "blurb": "Build agents, chat with bots, orchestrate runs, and connect MCP tools.",
+      "icon": "bi-robot",
+      "fePort": 5296,
+      "bePort": 5346,
+      "palette": [
+        "#0f172a",
+        "#1e293b",
+        "#22c55e"
+      ],
+      "pages": [
+        {
+          "path": "/agents"
+        }
+      ]
+    },
+    {
+      "slug": "prompt-studio",
+      "title": "Prompt Studio",
+      "blurb": "The prompt operating system: build, version, test, chain, and evaluate prompts.",
+      "icon": "bi-journal-text",
+      "fePort": 5297,
+      "bePort": 5347,
+      "palette": [
+        "#df5439",
+        "#c2410c",
+        "#833ab4"
+      ],
+      "pages": [
+        {
+          "path": "/prompts"
+        }
+      ]
+    },
+    {
+      "slug": "media-studio",
+      "title": "Media Studio",
+      "blurb": "Generate images and media with AI.",
+      "icon": "bi-image",
+      "fePort": 5298,
+      "bePort": 5348,
+      "palette": [
+        "#c026d3",
+        "#a21caf",
+        "#f59e0b"
+      ],
+      "pages": [
+        {
+          "path": "/media-studio"
+        }
+      ]
+    },
+    {
+      "slug": "content-studio",
+      "title": "Content Studio",
+      "blurb": "Turn one idea into a full pack of social posts.",
+      "icon": "bi-megaphone",
+      "fePort": 5299,
+      "bePort": 5349,
+      "palette": [
+        "#ea580c",
+        "#c2410c",
+        "#7c3aed"
+      ],
+      "pages": [
+        {
+          "path": "/content-studio"
+        }
+      ]
+    },
+    {
+      "slug": "kit-builder",
+      "title": "Kit Builder",
+      "blurb": "Assemble your company's AI kit and workspace.",
+      "icon": "bi-boxes",
+      "fePort": 5300,
+      "bePort": 5350,
+      "palette": [
+        "#0d9488",
+        "#0f766e",
+        "#f43f5e"
+      ],
+      "pages": [
+        {
+          "path": "/kit-builder"
+        }
+      ]
+    },
+    {
+      "slug": "colony",
+      "title": "Colony",
+      "blurb": "See every coding-agent session on this machine as a living crew.",
+      "icon": "bi-terminal",
+      "fePort": 5301,
+      "bePort": 5351,
+      "palette": [
+        "#16a34a",
+        "#15803d",
+        "#0ea5e9"
+      ],
+      "pages": [
+        {
+          "path": "/colony"
+        }
+      ]
+    }
+  ]
+}

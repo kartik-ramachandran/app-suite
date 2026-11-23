@@ -1,0 +1,196 @@
+/* Signal's live-meeting layer, shown alongside the analysis history. */
+
+.mp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 12px;
+  border-top: 1px solid var(--pg-border, #e5e7eb);
+}
+
+.mp-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mp-help-toggle {
+  border: 0;
+  background: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--pg-text-light, #94a3b8);
+  font-size: 0.85rem;
+}
+.mp-help-toggle:hover { color: var(--pg-text, #1f2937); }
+
+/* The three things people get stuck on, where they get stuck on them. */
+.mp-help {
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--pg-bg, #f8fafc);
+  border: 1px solid var(--pg-border, #e5e7eb);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  color: var(--pg-text, #1f2937);
+}
+.mp-help ol { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 5px; }
+.mp-help strong { font-weight: 700; }
+.mp-help-note {
+  margin: 8px 0 0;
+  color: var(--pg-text-light, #94a3b8);
+  font-size: 0.7rem;
+}
+.mp-help a {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #7c3aed;
+  text-decoration: none;
+}
+.mp-help a:hover { text-decoration: underline; }
+
+.mp-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--pg-text-light, #94a3b8);
+}
+.mp-head .bi { color: #dc2626; font-size: 0.8rem; }
+
+/* --- capture source -------------------------------------------------------- */
+.mp-source { display: flex; flex-direction: column; gap: 5px; }
+.mp-source label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--pg-text-light, #94a3b8);
+}
+.mp-source select {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--pg-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--pg-bg-secondary, #fff);
+  color: var(--pg-text, #1f2937);
+  font-size: 0.8rem;
+}
+.mp-note {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--pg-text-light, #94a3b8);
+}
+
+.mp-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+/* --- groups ---------------------------------------------------------------- */
+.mp-group { display: flex; flex-direction: column; gap: 6px; }
+.mp-group-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--pg-text-light, #94a3b8);
+}
+.mp-empty {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  color: var(--pg-text-light, #94a3b8);
+}
+
+/* --- a meeting ------------------------------------------------------------- */
+.mp-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--pg-border, #e5e7eb);
+  border-radius: 9px;
+  background: var(--pg-bg-secondary, #fff);
+  text-align: left;
+}
+.mp-item.is-armed { border-color: #dc2626; background: rgba(220, 38, 38, 0.04); }
+.mp-item-button { cursor: pointer; }
+.mp-item-button:hover:not(:disabled) { background: var(--pg-bg, #f8fafc); }
+.mp-item-button:disabled { cursor: default; opacity: 0.65; }
+
+.mp-item-icon { flex-shrink: 0; color: var(--pg-text-light, #94a3b8); font-size: 0.9rem; }
+.mp-item-body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.mp-item-body strong {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--pg-text, #1f2937);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-item-body small { font-size: 0.68rem; color: var(--pg-text-light, #94a3b8); }
+
+.mp-tag {
+  flex-shrink: 0;
+  font-size: 0.66rem;
+  color: var(--pg-text-light, #94a3b8);
+}
+
+.mp-btn {
+  flex-shrink: 0;
+  padding: 4px 11px;
+  border: 1px solid var(--pg-border, #e5e7eb);
+  border-radius: 999px;
+  background: var(--pg-bg-secondary, #fff);
+  color: var(--pg-text, #1f2937);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mp-btn:hover:not(:disabled) { border-color: #dc2626; color: #b91c1c; }
+.mp-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.mp-btn-off { border-color: #dc2626; color: #b91c1c; background: rgba(220, 38, 38, 0.06); }
+
+/* --- a meeting in progress ------------------------------------------------- */
+.mp-live {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: rgba(220, 38, 38, 0.07);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+}
+.mp-live-dot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #dc2626;
+  animation: mp-pulse 1.3s ease-in-out infinite;
+}
+@keyframes mp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+.mp-live-body { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.mp-live-body strong {
+  font-size: 0.78rem;
+  color: var(--pg-text, #1f2937);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-live-body small { font-size: 0.68rem; color: #b91c1c; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-live-dot { animation: none; }
+}

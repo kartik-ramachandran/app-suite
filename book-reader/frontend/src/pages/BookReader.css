@@ -1,0 +1,566 @@
+/* Book Reader — library grid, and a reading view built for long sessions. */
+
+.br-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 5rem;
+}
+
+.br-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.br-head h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
+.br-head > div { flex: 1; min-width: 220px; }
+
+.br-muted { color: var(--pg-text-light, #6b7280); margin: 0; font-size: 0.9rem; }
+.br-error { color: #c0392b; font-weight: 500; }
+.br-small { font-size: 0.85rem; }
+
+.br-upload, .br-open, .br-empty button, .br-upgrade button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: 10px;
+  background: #d62976;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.br-upload:disabled { opacity: 0.6; cursor: default; }
+
+/* ── Library ─────────────────────────────────────────────────────────────── */
+
+.br-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.br-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.1rem 1.1rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  background: var(--pg-bg-secondary, rgba(255, 255, 255, 0.65));
+}
+
+.br-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+.br-card-top .bi { font-size: 1.5rem; color: #d62976; }
+.br-card h3 { margin: 0 0 0.2rem; font-size: 1.02rem; line-height: 1.35; }
+.br-card-busy { opacity: 0.85; }
+
+/* A ready book is a target, so it should behave like one. */
+.br-card-open { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+.br-card-open:hover { transform: translateY(-2px); border-color: rgba(214, 41, 118, 0.4); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1); }
+.br-card-open:focus-visible { outline: 2px solid #d62976; outline-offset: 2px; }
+
+
+.br-del {
+  background: none; border: none; cursor: pointer;
+  color: var(--pg-text-light, #6b7280); padding: 2px;
+}
+.br-del:hover { color: #c0392b; }
+
+.br-meta { margin: 0.5rem 0 0.7rem; font-size: 0.82rem; color: var(--pg-text-light, #6b7280); }
+
+.br-status { display: flex; align-items: center; gap: 0.45rem; margin: 0.6rem 0 0; font-size: 0.85rem; }
+
+.br-spin {
+  width: 13px; height: 13px; flex-shrink: 0;
+  border: 2px solid rgba(214, 41, 118, 0.25);
+  border-top-color: #d62976;
+  border-radius: 50%;
+  animation: br-spin 0.8s linear infinite;
+}
+@keyframes br-spin { to { transform: rotate(360deg); } }
+
+.br-mini-progress { height: 4px; border-radius: 2px; background: rgba(0, 0, 0, 0.1); margin-bottom: 0.7rem; }
+.br-mini-progress > div { height: 100%; border-radius: 2px; background: #d62976; }
+
+.br-open { flex: 1; justify-content: center; }
+.br-card-actions { display: flex; gap: 0.45rem; margin-top: auto; }
+.br-recheck { width: 40px; height: auto; align-self: stretch; }
+
+
+.br-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  border: 1px dashed rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+}
+.br-empty .bi { font-size: 2.6rem; color: #d62976; }
+.br-empty h2 { margin: 0.7rem 0 0.3rem; font-size: 1.2rem; }
+.br-empty p { margin: 0 0 1.1rem; color: var(--pg-text-light, #6b7280); font-size: 0.92rem; }
+
+.br-upgrade {
+  display: flex; align-items: center; gap: 0.9rem;
+  padding: 1rem 1.2rem; margin-bottom: 1.2rem;
+  border: 1px solid rgba(214, 41, 118, 0.3);
+  border-radius: 12px;
+  background: rgba(214, 41, 118, 0.07);
+}
+.br-upgrade .bi { font-size: 1.5rem; color: #d62976; flex-shrink: 0; }
+.br-upgrade > div { flex: 1; }
+.br-upgrade p { margin: 0.2rem 0 0; font-size: 0.87rem; color: var(--pg-text-light, #6b7280); }
+
+/* Reader ------------------------------------------------------------------ */
+
+/* Two columns: text that stays a comfortable reading measure, and a cast
+   panel that does not steal from it. */
+.br-reader-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 6rem;
+}
+
+.br-bar { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.5rem; }
+.br-bar-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.br-pct { font-size: 0.8rem; font-weight: 600; color: var(--pg-text-light, #6b7280); }
+
+.br-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 9px; background: transparent; color: inherit; cursor: pointer;
+}
+.br-icon:hover { background: rgba(0, 0, 0, 0.05); }
+
+.br-progress { height: 3px; background: rgba(0, 0, 0, 0.08); border-radius: 2px; margin-bottom: 1.4rem; }
+.br-progress-fill { height: 100%; background: #d62976; border-radius: 2px; transition: width 0.3s ease; }
+
+.br-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 2rem;
+  align-items: start;
+}
+.br-cols-solo { grid-template-columns: minmax(0, 1fr); }
+
+/* Generous measure and leading: this is read for an hour at a time. */
+.br-lines { font-size: 1.08rem; line-height: 1.8; max-width: 68ch; }
+
+.br-line { padding: 0.45rem 0.85rem; border-radius: 9px; cursor: pointer; transition: background 0.15s ease; }
+.br-line:hover { background: rgba(0, 0, 0, 0.035); }
+.br-line-active { background: rgba(214, 41, 118, 0.1); box-shadow: inset 3px 0 0 #d62976; }
+.br-narration { color: var(--pg-text-light, #4b5563); font-style: italic; }
+
+/* ── Book page (non-fiction) ────────────────────────────────────────────────
+   A reference book is typeset, not narrated: a paper sheet, upright serif,
+   real heading levels, callout boxes, URLs as chips. Fiction keeps the
+   script-like narration styling above. */
+.br-book {
+  background: #fffdf7;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 12px 34px rgba(0, 0, 0, 0.07);
+  padding: 2.6rem 3rem 3rem;
+  font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+}
+.br-book .br-narration { color: #1f2937; font-style: normal; }
+.br-book .br-line { padding: 0.3rem 0.6rem; }
+/* Justified, but NOT auto-hyphenated. The extracted text already carries the
+   print edition's own line-break hyphens ("cur- rently"); letting the
+   browser add its own on top produces a page full of broken words, which
+   reads as bad extraction even when the text is correct. */
+.br-book .br-text { text-align: justify; display: block; hyphens: manual; }
+
+.br-book .br-h1 { margin-top: 2.2rem; }
+.br-book .br-h1 .br-text {
+  font-size: 1.65rem; font-weight: 700; line-height: 1.25;
+  text-align: left; color: #111827;
+  border-bottom: 2px solid #d62976; padding-bottom: 0.5rem;
+}
+.br-book .br-h2 { margin-top: 1.6rem; }
+.br-book .br-h2 .br-text {
+  font-size: 1.28rem; font-weight: 700; line-height: 1.3;
+  text-align: left; color: #1f2937;
+}
+.br-book .br-h3 { margin-top: 1.1rem; }
+.br-book .br-h3 .br-text {
+  font-size: 1.05rem; font-weight: 700; text-align: left; color: #374151;
+  letter-spacing: 0.01em;
+}
+
+.br-book .br-callout .br-text {
+  background: #fdf2f8;
+  border-left: 3px solid #d62976;
+  border-radius: 0 6px 6px 0;
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.98rem;
+}
+
+/* URL chip: sans-serif pill, obviously tappable, never justified-stretched. */
+.br-url {
+  display: inline-block;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.82em;
+  background: rgba(3, 105, 161, 0.09);
+  color: #0369a1;
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+  margin: 0 0.15rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.br-url:hover { background: rgba(3, 105, 161, 0.16); text-decoration: underline; }
+
+/* Figure caption line + the recreate affordance. */
+.br-book .br-figure .br-text {
+  text-align: left;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+.br-figure-go {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  margin-top: 0.5rem;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.85rem; font-weight: 600;
+  color: #d62976;
+  background: rgba(214, 41, 118, 0.07);
+  border: 1px dashed rgba(214, 41, 118, 0.4);
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+}
+.br-figure-go:hover { background: rgba(214, 41, 118, 0.13); }
+.br-figure-go:disabled { opacity: 0.6; cursor: default; }
+.br-figure-card {
+  margin-top: 0.7rem;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: default;
+}
+.br-figure-note {
+  margin: 0.6rem 0 0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+
+@media (max-width: 900px) {
+  .br-book { padding: 1.4rem 1.2rem 2rem; }
+}
+
+.br-speaker {
+  display: block; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.15rem;
+}
+
+.br-more {
+  display: block; width: 100%; margin: 1.4rem 0;
+  padding: 0.7rem; border: 1px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 10px; background: transparent; color: inherit;
+  font-size: 0.86rem; cursor: pointer;
+}
+
+/* The 'this looks like a cookbook' offer ---------------------------------- */
+
+.br-offer {
+  display: flex; align-items: center; gap: 0.9rem;
+  padding: 0.9rem 1.1rem; margin-bottom: 1.4rem;
+  border: 1px solid rgba(214, 41, 118, 0.32);
+  border-radius: 12px;
+  background: rgba(214, 41, 118, 0.07);
+}
+.br-offer > .bi { font-size: 1.5rem; color: #d62976; flex-shrink: 0; }
+.br-offer-body { flex: 1; min-width: 0; }
+.br-offer-body p { margin: 0.15rem 0 0; font-size: 0.86rem; color: var(--pg-text-light, #6b7280); }
+
+.br-offer-go {
+  flex-shrink: 0; padding: 0.55rem 1.1rem;
+  border: none; border-radius: 9px; background: #d62976; color: #fff;
+  font-weight: 600; font-size: 0.88rem; cursor: pointer;
+}
+.br-offer-go:disabled { opacity: 0.65; cursor: default; }
+
+.br-offer-x {
+  flex-shrink: 0; background: none; border: none; cursor: pointer;
+  color: var(--pg-text-light, #6b7280); padding: 4px; display: inline-flex;
+}
+
+.br-offer-done { border-color: rgba(21, 128, 61, 0.35); background: rgba(21, 128, 61, 0.07); }
+.br-offer-done > .bi { color: #15803d; }
+
+
+
+
+/* Cast panel -------------------------------------------------------------- */
+
+.br-panel {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 8rem);
+  overflow-y: auto;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  background: var(--pg-bg-secondary, rgba(255, 255, 255, 0.6));
+}
+
+.br-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  position: sticky; top: 0;
+  background: inherit;
+  backdrop-filter: blur(6px);
+}
+.br-panel-head h3 { margin: 0; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+.br-count {
+  min-width: 20px; padding: 0 6px; border-radius: 999px;
+  background: rgba(214, 41, 118, 0.12); color: #d62976;
+  font-size: 0.72rem; font-weight: 700; text-align: center;
+}
+
+.br-pad { padding: 0.9rem 1rem; }
+
+.br-char { display: flex; gap: 0.7rem; padding: 0.8rem 1rem; }
+.br-char + .br-char { border-top: 1px solid rgba(0, 0, 0, 0.06); }
+
+/* The speaking character lifts out of the list, so during playback the panel
+   answers "who is talking?" without being read. */
+.br-char-live { background: rgba(214, 41, 118, 0.06); }
+
+.br-char-body { flex: 1; min-width: 0; }
+.br-char-name { font-weight: 700; font-size: 0.92rem; line-height: 1.3; }
+.br-char-desc {
+  margin: 0.15rem 0 0.35rem; font-size: 0.78rem; line-height: 1.45;
+  color: var(--pg-text-light, #6b7280);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.br-char-meta {
+  display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center;
+  margin-bottom: 0.45rem; font-size: 0.71rem; color: var(--pg-text-light, #6b7280);
+}
+.br-char-meta em {
+  font-style: normal; padding: 1px 6px; border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+}
+.br-char select {
+  width: 100%; padding: 0.3rem 0.4rem;
+  border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 7px;
+  background: transparent; color: inherit; font-size: 0.76rem;
+}
+.br-char select:disabled { opacity: 0.5; }
+
+.br-facts { margin: 0; padding: 0.4rem 1rem 1rem; }
+.br-facts > div { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: 0.84rem; }
+.br-facts > div + div { border-top: 1px solid rgba(0, 0, 0, 0.06); }
+.br-facts dt { color: var(--pg-text-light, #6b7280); }
+.br-facts dd { margin: 0; font-weight: 600; }
+
+/* Playback stays reachable without scrolling back up. */
+.br-controls {
+  position: fixed;
+  left: 50%; transform: translateX(-50%);
+  bottom: 1.5rem; z-index: 20;
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 999px;
+  background: var(--pg-bg-secondary, rgba(255, 255, 255, 0.95));
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+.br-play {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.6rem 1.7rem; border: none; border-radius: 999px;
+  background: #d62976; color: #fff; font-weight: 600; font-size: 0.95rem; cursor: pointer;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Below 900px the panel would squeeze the text past readability, so it
+   collapses and the toggle in the bar brings it back as a full-width block. */
+@media (max-width: 900px) {
+  .br-cols { grid-template-columns: minmax(0, 1fr); }
+  .br-panel { position: static; max-height: none; }
+}
+
+@media (max-width: 600px) {
+  .br-head { flex-direction: column; }
+  .br-upload { width: 100%; justify-content: center; }
+  .br-grid { grid-template-columns: 1fr; }
+  .br-reader-shell { padding: 1rem 0.9rem 6rem; }
+}
+
+/* Merged-in Bookshelf: shelf snapping and recommendations. */
+.br-head-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.br-secondary {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.6rem 1.1rem; border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 10px; background: transparent; color: inherit;
+  font-weight: 600; font-size: 0.88rem; cursor: pointer;
+}
+.br-secondary:disabled { opacity: 0.6; cursor: default; }
+
+/* A catalogued book has nothing to play, so it says what it is instead. */
+.br-shelf-tag {
+  display: inline-flex; align-items: center; gap: 0.4rem; margin-top: auto;
+  padding: 0.5rem 0; font-size: 0.82rem; color: var(--pg-text-light, #6b7280);
+}
+
+.br-advice {
+  padding: 1rem 1.2rem; margin-bottom: 1.4rem;
+  border: 1px solid rgba(214, 41, 118, 0.28); border-radius: 13px;
+  background: rgba(214, 41, 118, 0.05);
+}
+.br-advice-head { display: flex; align-items: center; justify-content: space-between; }
+.br-advice-head h3 { margin: 0; font-size: 0.92rem; display: flex; align-items: center; gap: 0.45rem; }
+.br-advice p { margin: 0.5rem 0 0; font-size: 0.88rem; line-height: 1.6; }
+
+
+
+
+/* A figure lifted straight out of the PDF - the real picture, not a redraw. */
+.br-figure-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.8rem 0 0.4rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  /* Diagrams are usually drawn for white paper; on a dark page a transparent
+     PNG would render as black-on-black. */
+  background: #fff;
+  padding: 0.5rem;
+  cursor: zoom-in;
+}
+
+
+/* ── Reading-mode toggle ─────────────────────────────────────────────────── */
+.br-mode { display: inline-flex; gap: 0; margin-left: 0.9rem; border: 1px solid rgba(0,0,0,0.14); border-radius: 9px; overflow: hidden; }
+.br-mode-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.4rem 0.8rem; border: 0; background: transparent;
+  font-size: 0.82rem; font-weight: 600; color: inherit; cursor: pointer;
+}
+.br-mode-btn.active { background: #d62976; color: #fff; }
+
+
+/* ── The book: a single leaf you turn ────────────────────────────────────── */
+.br-paper { display: flex; flex-direction: column; align-items: center; }
+
+.br-leaf {
+  width: 100%;
+  max-width: 40rem;
+  min-height: 60vh;
+  padding: 3rem 3.2rem 2.4rem;
+  background: #fdfaf3;
+  color: #241f18;
+  border-radius: 4px 12px 12px 4px;
+  /* Paper: a spine shadow on the left, the page lifting on the right. */
+  box-shadow:
+    inset 14px 0 22px -18px rgba(60, 40, 20, 0.55),
+    0 10px 26px rgba(0, 0, 0, 0.14),
+    0 2px 5px rgba(0, 0, 0, 0.08);
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  font-size: 1.02rem;
+  line-height: 1.75;
+  text-align: justify;
+  hyphens: manual;   /* see above: the source text already has print hyphens */
+  transform-origin: left center;
+}
+
+/* Turning: the leaf lifts off the spine rather than sliding sideways. */
+@keyframes br-flip-next {
+  0%   { transform: perspective(1600px) rotateY(0deg);   opacity: 1; }
+  45%  { transform: perspective(1600px) rotateY(-16deg); opacity: 0.65; }
+  100% { transform: perspective(1600px) rotateY(0deg);   opacity: 1; }
+}
+@keyframes br-flip-prev {
+  0%   { transform: perspective(1600px) rotateY(0deg);   opacity: 1; }
+  45%  { transform: perspective(1600px) rotateY(16deg);  opacity: 0.65; }
+  100% { transform: perspective(1600px) rotateY(0deg);   opacity: 1; }
+}
+.br-turn-next { animation: br-flip-next 0.42s ease; }
+.br-turn-prev { animation: br-flip-prev 0.42s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .br-turn-next, .br-turn-prev { animation: none; }
+}
+
+/* Lines sit as paragraphs on the page, not as list rows. */
+.br-leaf .br-line { padding: 0; margin: 0 0 1rem; border: 0; background: none; cursor: pointer; }
+.br-leaf .br-line-active { background: rgba(214, 41, 118, 0.09); border-radius: 4px; }
+.br-leaf .br-text { display: block; }
+.br-leaf .br-figure-img { margin: 1rem auto; }
+
+/* ── Flip controls ───────────────────────────────────────────────────────── */
+.br-flip { display: flex; align-items: center; gap: 1.4rem; margin-top: 1.4rem; }
+.br-flip-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.6rem; height: 2.6rem; border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.14); background: transparent;
+  color: inherit; cursor: pointer; font-size: 1.05rem;
+}
+.br-flip-btn:hover:not(:disabled) { background: rgba(214, 41, 118, 0.1); border-color: #d62976; color: #d62976; }
+.br-flip-btn:disabled { opacity: 0.35; cursor: default; }
+.br-flip-count { font-size: 0.85rem; color: var(--pg-text-light, #6b7280); min-width: 9rem; text-align: center; }
+
+
+
+/* A figure is fetched, so it needs somewhere to land while it arrives. */
+.br-figure-loading {
+  height: 8rem; margin: 0.8rem 0;
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 37%, rgba(0,0,0,0.04) 63%);
+  background-size: 400% 100%;
+  animation: br-shimmer 1.4s ease infinite;
+}
+@keyframes br-shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+@media (max-width: 700px) {
+  .br-leaf { padding: 2rem 1.5rem; font-size: 0.97rem; }
+  .br-mode { margin-left: 0; }
+}
+
+/* Blocks the model identified. A heading must LOOK like a heading: the
+   screenshots showed chapter titles running into body text as one wall. */
+.br-heading .br-text {
+  display: block;
+  font-size: 1.22rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 1.6rem 0 0.3rem;
+  text-align: left;
+  hyphens: none;
+}
+.br-body .br-text { display: block; }
+.br-caption .br-text {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #6b7280;
+  text-align: left;
+  hyphens: none;
+}
+

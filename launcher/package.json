@@ -1,0 +1,15 @@
+{
+  "name": "standalone-launcher",
+  "productName": "App Launcher",
+  "version": "1.0.0",
+  "description": "Lists every standalone app in this repo, starts and stops them, and talks to the local Claude CLI.",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check main.js && node --check preload.js && node --check apps.js && node --check claude.js && node --check processes.js && node --check remote.js && node --check renderer/app.js"
+  },
+  "devDependencies": {
+    "electron": "^45.4.1"
+  }
+}

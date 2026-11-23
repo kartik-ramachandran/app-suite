@@ -1,0 +1,281 @@
+/* Voice + text chat panel embedded in the wardrobe, kitchen and travel modules.
+   Sits inside the host page, so it inherits that page's surface rather than
+   introducing a competing card. */
+
+.mvc {
+  margin: 1.25rem 0;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+
+
+.mvc-head { margin-bottom: 0.85rem; }
+
+.mvc-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.mvc-head small {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  opacity: 0.6;
+}
+
+/* Thread ------------------------------------------------------------------- */
+
+.mvc-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 380px;
+  overflow-y: auto;
+  margin-bottom: 0.85rem;
+  padding-right: 0.25rem;
+}
+
+.mvc-turn { display: flex; }
+.mvc-you { justify-content: flex-end; }
+.mvc-assistant { justify-content: flex-start; }
+
+.mvc-bubble {
+  max-width: 85%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.mvc-you .mvc-bubble {
+  background: #d62976;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.mvc-assistant .mvc-bubble {
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom-left-radius: 4px;
+}
+
+
+
+/* A withheld answer reads as a caution, not as a normal reply. */
+.mvc-withheld {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.mvc-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+  margin: 0.6rem 0 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.09);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  opacity: 0.7;
+}
+
+
+
+/* Level meter --------------------------------------------------------------- */
+
+.mvc-meter {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 34px;
+  margin-bottom: 0.7rem;
+  padding: 0 0.2rem;
+}
+
+.mvc-meter i {
+  flex: 1;
+  min-height: 3px;
+  border-radius: 2px;
+  background: #d62976;
+  transition: height 0.08s linear;
+}
+
+.mvc-secs {
+  margin-left: 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.6;
+  align-self: center;
+}
+
+/* Controls ------------------------------------------------------------------ */
+
+.mvc-controls { display: flex; align-items: center; gap: 0.5rem; }
+
+.mvc-mic,
+.mvc-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: #d62976;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.mvc-mic:disabled,
+.mvc-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.mvc-mic-on {
+  background: #dc2626;
+  animation: mvc-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes mvc-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+  50% { box-shadow: 0 0 0 9px rgba(220, 38, 38, 0); }
+}
+
+.mvc-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+  color: inherit;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.mvc-input:focus { outline: none; border-color: #d62976; }
+
+
+
+.mvc-busy {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.82rem;
+  opacity: 0.6;
+}
+
+.mvc-spin {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(214, 41, 118, 0.25);
+  border-top-color: #d62976;
+  border-radius: 50%;
+  animation: mvc-spin 0.7s linear infinite;
+}
+
+@keyframes mvc-spin { to { transform: rotate(360deg); } }
+
+.mvc-error {
+  margin: 0 0 0.6rem;
+  font-size: 0.82rem;
+  color: #b91c1c;
+}
+
+
+
+/* Health, food and plant domains. The backend screens these and fails closed;
+   the border makes that carefulness visible rather than invisible. */
+.mvc-care {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.mvc-care .mvc-head h3::after {
+  content: 'takes care';
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+
+
+/* Blocked-permission recovery. Deliberately prominent: this is a dead end the
+   user can only escape via browser settings, so burying it in a one-line error
+   guarantees they give up instead. */
+.mvc-blocked {
+  margin-bottom: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.mvc-blocked strong {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+}
+
+.mvc-blocked p {
+  margin: 0.4rem 0 0.5rem;
+  font-size: 0.82rem;
+  opacity: 0.75;
+}
+
+.mvc-blocked ol {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.mvc-blocked-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.mvc-blocked-actions span {
+  font-size: 0.78rem;
+  opacity: 0.6;
+}
+
+.mvc-retry {
+  padding: 0.45rem 0.85rem;
+  border: none;
+  border-radius: 8px;
+  background: #d62976;
+  color: #fff;
+  font-size: 0.82rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* A blocked mic must not look like a working one. */
+.mvc-mic-blocked {
+  background: #9ca3af;
+}
+
+.mvc-empty {
+  opacity: 0.6;
+  font-style: italic;
+}

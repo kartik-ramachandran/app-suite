@@ -1,0 +1,983 @@
+/* ── Cosmos — 3D knowledge graph ─────────────────────────────────────────────
+   A bright, airy canvas with crisp white controls and saturated graph marks. */
+
+.cosmos-page {
+  --cosmos-ink: #312e4b;
+  --cosmos-muted: #706c86;
+  --cosmos-border: rgba(92, 84, 150, 0.18);
+  --cosmos-surface: rgba(255, 255, 255, 0.9);
+  --cosmos-accent: #e4573d;
+  position: relative;
+  height: calc(100dvh - 63px);
+  min-height: 480px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #ffffff 0%, #f7f7ff 48%, #fff8f2 100%);
+  border: 1px solid #dedbea;
+  box-shadow: 0 18px 48px rgba(69, 58, 120, 0.08);
+}
+
+.cosmos-stage,
+.cosmos-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cosmos-stage canvas { display: block; cursor: grab; }
+.cosmos-stage canvas:active { cursor: grabbing; }
+
+/* The editorial theme is loaded later, so keep Cosmos fields on the same light
+   surfaces in every site theme. */
+.cosmos-page input,
+.cosmos-page textarea {
+  color: var(--cosmos-ink) !important;
+  box-shadow: none !important;
+}
+.cosmos-page input::placeholder,
+.cosmos-page textarea::placeholder {
+  color: #9894a8 !important;
+}
+.cosmos-page .cosmos-search input {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+.cosmos-page .cosmos-dock textarea {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+.cosmos-page .cosmos-dock textarea:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+.cosmos-page .cosmos-edit input,
+.cosmos-page .cosmos-edit textarea {
+  background: #fbfaff !important;
+  border: 1px solid #ddd9e8 !important;
+  border-radius: 10px !important;
+}
+.cosmos-page .cosmos-edit input:focus,
+.cosmos-page .cosmos-edit textarea:focus {
+  border-color: rgba(228, 87, 61, 0.6) !important;
+}
+
+/* Floating node labels (positioned from JS) */
+.cosmos-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cosmos-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: #4b4763;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95);
+  will-change: transform;
+}
+
+.cosmos-label[data-kind='concept'] { color: #8d5d00; font-weight: 700; }
+.cosmos-label[data-kind='tag'] { color: #4450bd; font-weight: 600; }
+
+/* ── Shared bits ── */
+.cosmos-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.cosmos-dot[data-kind='concept'] { background: #e4a11b; box-shadow: 0 0 0 3px rgba(228, 161, 27, 0.14); }
+.cosmos-dot[data-kind='tag'] { background: #6370dc; box-shadow: 0 0 0 3px rgba(99, 112, 220, 0.13); }
+.cosmos-dot[data-kind='note'] { background: #ed6547; box-shadow: 0 0 0 3px rgba(237, 101, 71, 0.13); }
+
+.cosmos-glass {
+  background: var(--cosmos-surface);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--cosmos-border);
+}
+
+/* ── Top bar ── */
+.cosmos-topbar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.cosmos-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  min-width: 230px;
+  pointer-events: auto;
+  background: var(--cosmos-surface);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--cosmos-border);
+  box-shadow: 0 8px 24px rgba(66, 57, 114, 0.08);
+}
+
+.cosmos-search i { color: #77728e; font-size: 0.85rem; }
+
+.cosmos-search input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--cosmos-ink);
+  font-size: 0.85rem;
+  width: 100%;
+}
+.cosmos-search input::placeholder { color: #9995aa; }
+
+.cosmos-search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--cosmos-border);
+  box-shadow: 0 14px 32px rgba(66, 57, 114, 0.13);
+}
+
+.cosmos-search-results button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  background: transparent;
+  border: none;
+  color: var(--cosmos-ink);
+  font-size: 0.83rem;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cosmos-search-results button:hover { background: #fff1ed; }
+
+.cosmos-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.cosmos-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 15px;
+  border-radius: 999px;
+  border: 1px solid var(--cosmos-border);
+  background: var(--cosmos-surface);
+  color: var(--cosmos-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(66, 57, 114, 0.08);
+  transition: background 0.15s, transform 0.15s;
+}
+.cosmos-sync:hover:not(:disabled) { background: #fff1ed; transform: translateY(-1px); }
+.cosmos-sync:disabled { opacity: 0.6; cursor: default; }
+
+.cosmos-route { margin-top: 16px; }
+.cosmos-route h4 {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cosmos-muted);
+}
+.cosmos-route-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.cosmos-route-row input {
+  flex: 1;
+  min-width: 0;
+  background: #fbfaff !important;
+  border: 1px solid #ddd9e8 !important;
+  border-radius: 10px !important;
+  padding: 8px 12px;
+  font-size: 0.83rem;
+}
+.cosmos-route-row input:focus { border-color: rgba(228, 87, 61, 0.6) !important; outline: none; }
+.cosmos-route-row .cosmos-btn-primary { padding: 8px 13px; }
+.cosmos-route-hint {
+  margin: 8px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--cosmos-muted);
+}
+
+/* Refine step: AI plan preview — destination, goal, editable brief */
+.cosmos-route-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fbfaff;
+  border: 1px solid #e6e2f0;
+}
+.cosmos-route-plan-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.cosmos-route-plan-head select {
+  padding: 6px 10px;
+  border-radius: 9px;
+  border: 1px solid #ddd9e8;
+  background: #fff;
+  color: var(--cosmos-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cosmos-route-plan-head select { max-width: 100%; }
+.cosmos-route-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #a2440f;
+  background: rgba(228, 87, 61, 0.1);
+  border: 1px solid rgba(228, 87, 61, 0.24);
+  white-space: nowrap;
+}
+/* What the chosen module does — the (i) line under the picker */
+.cosmos-route-about {
+  display: flex;
+  gap: 6px;
+  margin: -2px 0 0;
+  font-size: 0.73rem;
+  line-height: 1.5;
+  color: var(--cosmos-muted);
+}
+.cosmos-route-about > i {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--cosmos-accent);
+}
+.cosmos-route-about em { font-style: normal; opacity: 0.85; }
+.cosmos-route-reason {
+  font-size: 0.72rem;
+  color: var(--cosmos-muted);
+  font-style: italic;
+}
+.cosmos-route-goal {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--cosmos-ink);
+}
+.cosmos-route-goal i { color: var(--cosmos-accent); margin-right: 4px; }
+.cosmos-route-plan textarea {
+  width: 100%;
+  background: #fff !important;
+  border: 1px solid #ddd9e8 !important;
+  border-radius: 10px !important;
+  padding: 9px 12px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  font-family: inherit;
+  resize: vertical;
+}
+.cosmos-route-plan textarea:focus { border-color: rgba(228, 87, 61, 0.6) !important; outline: none; }
+
+.cosmos-stats {
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--cosmos-muted);
+  background: rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--cosmos-border);
+  box-shadow: 0 8px 24px rgba(66, 57, 114, 0.06);
+  white-space: nowrap;
+}
+
+/* ── Link mode banner ── */
+.cosmos-linkmode {
+  position: absolute;
+  top: 66px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-size: 0.83rem;
+  color: #fff;
+  background: rgba(228, 87, 61, 0.92);
+  box-shadow: 0 6px 24px rgba(228, 87, 61, 0.4);
+  z-index: 5;
+  max-width: min(92%, 560px);
+}
+.cosmos-linkmode span { opacity: 0.75; }
+
+/* ── Empty / loading ── */
+.cosmos-empty {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--cosmos-ink);
+  max-width: 430px;
+  padding: 0 20px;
+  z-index: 3;
+  pointer-events: none;
+}
+.cosmos-empty i {
+  display: inline-grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  font-size: 1.65rem;
+  color: #c47c00;
+  background: #fff0c8;
+  box-shadow: 0 10px 28px rgba(196, 124, 0, 0.14);
+}
+.cosmos-empty h3 { margin: 12px 0 8px; font-size: 1.25rem; }
+.cosmos-empty p { font-size: 0.88rem; line-height: 1.55; color: var(--cosmos-muted); }
+.cosmos-empty code {
+  color: #514c6b;
+  background: #eeecf8;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+}
+
+.cosmos-loading {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--cosmos-muted);
+  z-index: 4;
+}
+
+.cosmos-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(89, 77, 143, 0.2);
+  border-top-color: #5f56a3;
+  border-radius: 50%;
+  animation: cosmos-spin 0.8s linear infinite;
+}
+@keyframes cosmos-spin { to { transform: rotate(360deg); } }
+
+/* ── Dump dock ── */
+.cosmos-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(92%, 760px);
+  display: block;
+  padding: 10px 12px 12px;
+  border-radius: 28px;
+  z-index: 5;
+  background: #fff;
+  border: 1px solid #dddce3;
+  box-shadow: 0 6px 24px rgba(44, 40, 65, 0.11);
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.cosmos-dock:focus-within {
+  border-color: #c9c7d0;
+  box-shadow: 0 7px 28px rgba(44, 40, 65, 0.14);
+}
+
+.cosmos-dock.dragging {
+  background: #fffaf8;
+  border-color: rgba(228, 87, 61, 0.6);
+  box-shadow: 0 0 0 4px rgba(228, 87, 61, 0.1), 0 7px 28px rgba(44, 40, 65, 0.14);
+}
+
+.cosmos-file-input {
+  display: none !important;
+}
+
+.cosmos-dock-main {
+  min-width: 0;
+  width: 100%;
+}
+
+.cosmos-page .cosmos-attach {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 0 !important;
+  border: 1px solid #dddce3;
+  border-radius: 50% !important;
+  background: #fff;
+  color: #47444f;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.cosmos-page .cosmos-attach:hover:not(:disabled) {
+  color: #29272e;
+  border-color: #ceccd4;
+  background: #f4f4f5;
+}
+
+.cosmos-page .cosmos-attach:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.cosmos-file-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 1px 0 7px;
+  scrollbar-width: thin;
+}
+
+.cosmos-file-chip {
+  max-width: 260px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 9px;
+  border: 1px solid #e1ddec;
+  border-radius: 999px;
+  background: #f7f5fc;
+  color: #514c69;
+  font-size: 0.76rem;
+}
+
+.cosmos-file-chip > i {
+  color: #e4573d;
+}
+
+.cosmos-file-chip > span {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.cosmos-file-chip small {
+  color: #898497;
+  white-space: nowrap;
+}
+
+.cosmos-file-chip button {
+  display: grid;
+  place-items: center;
+  padding: 1px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #8d879b;
+  cursor: pointer;
+}
+
+.cosmos-file-chip button:hover:not(:disabled) {
+  color: #c7432c;
+  background: #ffe9e4;
+}
+
+.cosmos-dock textarea {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  resize: none;
+  color: var(--cosmos-ink);
+  padding: 7px 5px 5px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  font-family: inherit;
+  max-height: 180px;
+  min-width: 0;
+}
+.cosmos-dock textarea::placeholder { color: #9894a8; }
+
+.cosmos-dock-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  margin-top: 2px;
+}
+
+.cosmos-page .cosmos-dock-save {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 0 !important;
+  border: none;
+  border-radius: 50% !important;
+  background: var(--cosmos-accent);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s, opacity 0.15s;
+}
+.cosmos-page .cosmos-dock-save:hover:not(:disabled) { background: #df5439; transform: translateY(-1px); }
+.cosmos-page .cosmos-dock-save:disabled {
+  background: #e7e7e9;
+  color: #aaa7af;
+  cursor: default;
+}
+.cosmos-page .cosmos-dock-save .cosmos-spinner {
+  width: 15px;
+  height: 15px;
+  border-color: rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+}
+
+/* ── Legend ── */
+.cosmos-legend {
+  position: absolute;
+  right: 14px;
+  bottom: 70px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: var(--cosmos-muted);
+  z-index: 4;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--cosmos-border);
+  box-shadow: 0 8px 24px rgba(66, 57, 114, 0.07);
+}
+.cosmos-legend > span { display: flex; align-items: center; gap: 8px; }
+
+/* ── Detail panel ── */
+.cosmos-panel {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  bottom: 90px;
+  width: min(88%, 340px);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border-radius: 16px;
+  overflow-y: auto;
+  z-index: 6;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--cosmos-border);
+  box-shadow: 0 18px 48px rgba(66, 57, 114, 0.16);
+  color: var(--cosmos-ink);
+}
+
+.cosmos-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.cosmos-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.cosmos-chip[data-kind='concept'] { background: #fff0c8; color: #8d5d00; }
+.cosmos-chip[data-kind='tag'] { background: #eceeff; color: #4450bd; }
+.cosmos-chip[data-kind='note'] { background: #ffebe6; color: #b43f28; }
+.cosmos-chip-source { background: #f0eef7; color: #6f6a82; text-transform: none; letter-spacing: 0; }
+
+.cosmos-panel-close {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #77728b;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px;
+}
+.cosmos-panel-close:hover { color: var(--cosmos-ink); background: #f1eff7; border-radius: 7px; }
+
+.cosmos-panel-title {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.cosmos-panel-content {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #59556f;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8f7fc;
+  border: 1px solid #ebe8f2;
+}
+
+.cosmos-panel-meta {
+  margin-top: 10px;
+  font-size: 0.74rem;
+  color: #888397;
+}
+.cosmos-panel-meta a { color: #c7442c; }
+
+.cosmos-panel-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.cosmos-btn-primary,
+.cosmos-btn-ghost,
+.cosmos-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s;
+}
+
+.cosmos-btn-primary { background: #e4573d; color: #fff; }
+.cosmos-btn-primary:hover { background: #df5439; }
+.cosmos-btn-primary.active { background: #a93727; }
+
+.cosmos-btn-ghost {
+  background: #f0eef7;
+  color: #514c69;
+}
+.cosmos-btn-ghost:hover { background: #e7e4f1; }
+
+.cosmos-btn-danger {
+  background: transparent;
+  color: #827d91;
+  border: 1px solid #ddd9e8;
+}
+.cosmos-btn-danger:hover { color: #c7432c; border-color: rgba(199, 67, 44, 0.45); background: #fff2ef; }
+
+/* File attachments */
+.cosmos-attachments {
+  margin-top: 14px;
+}
+
+.cosmos-attachments h4 {
+  margin: 0 0 7px;
+  color: #858093;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cosmos-attachment {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.cosmos-attachment-download {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  border: 1px solid #e6e2ef;
+  border-radius: 10px;
+  background: #f8f7fc;
+  color: var(--cosmos-ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.cosmos-attachment-download:hover {
+  border-color: #d5cfe5;
+  background: #f2f0f8;
+}
+
+.cosmos-attachment-download > i:first-child {
+  flex: 0 0 auto;
+  color: #e4573d;
+  font-size: 1rem;
+}
+
+.cosmos-attachment-download > i:last-child {
+  margin-left: auto;
+  color: #888397;
+  font-size: 0.8rem;
+}
+
+.cosmos-attachment-download > span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cosmos-attachment-download strong {
+  overflow: hidden;
+  color: #4b4763;
+  font-size: 0.79rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cosmos-attachment-download small {
+  margin-top: 1px;
+  color: #8f899d;
+  font-size: 0.68rem;
+}
+
+.cosmos-attachment-remove {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  padding: 5px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #9b96a7;
+  cursor: pointer;
+}
+
+.cosmos-attachment-remove:hover {
+  color: #c7432c;
+  background: #fff0ed;
+}
+
+/* Edit mode */
+.cosmos-edit { display: flex; flex-direction: column; gap: 10px; }
+.cosmos-edit input,
+.cosmos-edit textarea {
+  background: #fbfaff;
+  border: 1px solid #ddd9e8;
+  border-radius: 10px;
+  color: var(--cosmos-ink);
+  padding: 9px 12px;
+  font-size: 0.86rem;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+}
+.cosmos-edit input:focus,
+.cosmos-edit textarea:focus { border-color: rgba(228, 87, 61, 0.6); }
+
+/* Connections list */
+.cosmos-panel-links { margin-top: 18px; }
+.cosmos-panel-links h4 {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #858093;
+}
+
+.cosmos-panel-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cosmos-panel-link-jump {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--cosmos-ink);
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+}
+.cosmos-panel-link-jump:hover { background: #f2f0f8; }
+
+.cosmos-panel-link-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cosmos-panel-link-kind {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+  color: #918c9f;
+}
+
+.cosmos-panel-link-remove {
+  background: transparent;
+  border: none;
+  color: #9b96a7;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.cosmos-panel-link-remove:hover { color: #c7432c; background: #fff0ed; }
+
+/* ── Toast ── */
+.cosmos-toast {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  color: var(--cosmos-ink);
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(217, 147, 11, 0.35);
+  box-shadow: 0 10px 30px rgba(66, 57, 114, 0.16);
+  z-index: 8;
+  animation: cosmos-toast-in 0.25s ease;
+  max-width: 92%;
+  text-align: center;
+}
+@keyframes cosmos-toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .cosmos-page { height: calc(100dvh - 57px); }
+  .cosmos-topbar { flex-direction: column; }
+  .cosmos-search { min-width: 0; width: 100%; }
+  .cosmos-stats { display: none; }
+  .cosmos-legend { display: none; }
+  .cosmos-panel {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 84px;
+    width: auto;
+    max-height: 55%;
+  }
+  .cosmos-dock { width: calc(100% - 16px); }
+  .cosmos-file-chip { max-width: 210px; }
+}
+
+/* Voice/text chat over the star field. Bottom-left so it clears the top search
+   bar and the right-hand node panel, and scrolls internally rather than growing
+   into the canvas. */
+.cosmos-ask {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 6;
+  width: min(380px, calc(100vw - 2rem));
+  max-height: 60vh;
+  overflow-y: auto;
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+}
+
+.cosmos-ask .mvc {
+  margin: 0;
+  background: rgba(10, 12, 18, 0.82);
+  border-color: rgba(255, 255, 255, 0.14);
+  /* The panel is dark in BOTH themes (the star-field behind it is always
+     dark), but text color inherits from the page theme — in light mode that
+     meant near-black text on a near-black panel. Pin light text here. */
+  color: #e8eaf0;
+}
+
+/* The heading/subtitle rely on inherited color + opacity, which is what went
+   invisible. Give them explicit values with real contrast on the dark glass. */
+.cosmos-ask .mvc-head h3 { color: #f4f5f8; }
+.cosmos-ask .mvc-head small { color: #b6bcc9; opacity: 1; }
+
+/* Light-mode-only surfaces inside the panel flip to their dark equivalents. */
+.cosmos-ask .mvc-input {
+  background: rgba(255, 255, 255, 0.92);
+  color: #14161a;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.cosmos-ask .mvc-user .mvc-bubble { background: #d62976; color: #fff; }
+.cosmos-ask .mvc-assistant .mvc-bubble { background: rgba(255, 255, 255, 0.1); }
+.cosmos-ask .mvc-disclaimer { border-top-color: rgba(255, 255, 255, 0.14); }
+.cosmos-ask .mvc-error { color: #fca5a5; }
+
+@media (max-width: 720px) {
+  .cosmos-ask { max-height: 45vh; }
+}

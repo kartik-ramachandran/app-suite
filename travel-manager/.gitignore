@@ -1,0 +1,16 @@
+# Backend
+bin/
+obj/
+*.user
+travel.db
+travel.db-shm
+travel.db-wal
+appsettings.Development.json
+appsettings.Production.json
+
+# Frontend
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.local

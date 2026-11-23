@@ -1,0 +1,20 @@
+# build output
+bin/
+obj/
+dist/
+node_modules/
+*.tsbuildinfo
+.vite/
+
+# local data and secrets — never commit
+*.db
+*.db-shm
+*.db-wal
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+.env
+.env.local
+*.user
+.vs/
+.idea/

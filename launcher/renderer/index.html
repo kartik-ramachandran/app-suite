@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ff5a36" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'" />
+  <title>App Launcher</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="brand-mark">◆</span>
+      <div>
+        <h1>App Launcher</h1>
+        <p id="subtitle">Every app, one place — and Claude on tap.</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="apps" role="tab">Apps</button>
+      <button class="tab" data-tab="claude" role="tab">Claude</button>
+      <button class="tab" data-tab="settings" role="tab">Settings</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Apps -->
+    <section id="tab-apps" class="panel active">
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search apps…" autocomplete="off" />
+        <div class="counts" id="counts"></div>
+        <button id="stopAll" class="btn ghost">Stop all</button>
+      </div>
+      <div id="grid" class="grid"></div>
+    </section>
+
+    <!-- Claude -->
+    <section id="tab-claude" class="panel">
+      <div class="claude-head">
+        <div class="claude-status" id="claudeStatus">Checking for the Claude CLI…</div>
+        <div class="claude-controls">
+          <label>Folder
+            <select id="claudeApp"></select>
+          </label>
+          <label>Mode
+            <select id="claudeMode">
+              <option value="plan">Read-only (plan)</option>
+              <option value="acceptEdits">Can edit files</option>
+            </select>
+          </label>
+          <button id="claudeNew" class="btn ghost">New chat</button>
+        </div>
+      </div>
+      <div id="chat" class="chat" aria-live="polite"></div>
+      <form id="composer" class="composer">
+        <textarea id="prompt" rows="2" placeholder="Ask Claude about this app — “why won't the backend start?”, “add a summary card to the home page”"></textarea>
+        <button id="send" class="btn hot" type="submit">Send</button>
+        <button id="stopClaude" class="btn ghost hidden" type="button">Stop</button>
+      </form>
+    </section>
+
+    <!-- Settings -->
+    <section id="tab-settings" class="panel">
+      <div class="cards">
+        <div class="card" id="aiCard">
+          <h2>AI keys for the apps</h2>
+          <p class="muted">Every app runs on Claude, Azure OpenAI or OpenAI. Keys are stored on this computer only and handed to each app when it starts.</p>
+          <label class="field">Preferred provider
+            <select id="aiPreferred">
+              <option>Claude</option><option>Azure</option><option>OpenAI</option>
+            </select>
+          </label>
+          <fieldset><legend>Claude</legend>
+            <label class="field">API key <input id="anthropicKey" type="password" autocomplete="off" /></label>
+            <label class="field">Model <input id="anthropicModel" placeholder="claude-sonnet-5-5" /></label>
+          </fieldset>
+          <fieldset><legend>Azure OpenAI</legend>
+            <label class="field">Endpoint <input id="azureEndpoint" placeholder="https://your-resource.openai.azure.com/" /></label>
+            <label class="field">API key <input id="azureKey" type="password" autocomplete="off" /></label>
+            <label class="field">Deployment <input id="azureDeployment" placeholder="gpt-4o" /></label>
+          </fieldset>
+          <fieldset><legend>OpenAI</legend>
+            <label class="field">API key <input id="openaiKey" type="password" autocomplete="off" /></label>
+            <label class="field">Model <input id="openaiModel" placeholder="gpt-4o" /></label>
+          </fieldset>
+          <div class="row">
+            <button id="saveAi" class="btn hot">Save</button>
+            <span id="aiSaved" class="muted"></span>
+          </div>
+          <p class="muted small">Apps that are already running pick up new keys the next time you start them.</p>
+        </div>
+
+        <div class="card" id="phoneCard">
+          <h2>Phone access</h2>
+          <p class="muted">Use the launcher and Claude from your phone, on the same Wi-Fi. Only devices you pair can connect, and only from your own network.</p>
+          <div id="phoneBody"></div>
+          <label class="check"><input type="checkbox" id="phoneEdits" /> Let Claude edit files when asked from the phone</label>
+          <p class="muted small">Off: from the phone, Claude can read and explain but not change anything.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="logs" class="logs">
+    <form method="dialog" class="logs-head">
+      <h3 id="logsTitle">Logs</h3>
+      <div class="logs-tabs">
+        <button type="button" class="tab active" data-log="be">Backend</button>
+        <button type="button" class="tab" data-log="fe">Frontend</button>
+      </div>
+      <button class="btn ghost">Close</button>
+    </form>
+    <pre id="logsBody"></pre>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

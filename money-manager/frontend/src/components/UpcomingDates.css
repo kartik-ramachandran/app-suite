@@ -1,0 +1,118 @@
+/* Cross-module "coming up" panel. Sits inside existing pages, so it inherits
+   the host page's surface rather than introducing a competing card style. */
+
+.upc {
+  margin: 1.25rem 0;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+
+
+.upc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.upc-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.upc-badge {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.upc-overdue {
+  background: rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+}
+
+
+
+.upc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.upc-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.6rem;
+  border-radius: 9px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.upc-link:hover { background: rgba(214, 41, 118, 0.06); }
+
+.upc-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: rgba(214, 41, 118, 0.1);
+  color: #d62976;
+  font-size: 0.95rem;
+}
+
+/* Urgency is carried by the icon tint as well as the text, so the list is still
+   readable in greyscale or at a glance. */
+.upc-overdue .upc-icon { background: rgba(220, 38, 38, 0.12); color: #dc2626; }
+.upc-soon .upc-icon { background: rgba(245, 158, 11, 0.14); color: #d97706; }
+
+.upc-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.upc-body strong {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upc-body small { font-size: 0.76rem; opacity: 0.6; }
+
+.upc-when {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.upc-item.upc-overdue .upc-when { color: #dc2626; opacity: 1; }
+.upc-item.upc-soon .upc-when { color: #d97706; opacity: 1; }
+
+.upc-more {
+  margin: 0.6rem 0 0;
+  font-size: 0.78rem;
+  opacity: 0.55;
+  text-align: center;
+}

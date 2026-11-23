@@ -1,0 +1,85 @@
+/* Packing list — the trip card reading the user's real wardrobe. */
+
+.pk-card {
+  margin-top: 1.5rem;
+  padding: 1.2rem 1.3rem;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 14px;
+  background: var(--pg-card, #fff);
+}
+
+.pk-head h3 { margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+.pk-head p { margin: 0.3rem 0 0; font-size: 0.84rem; color: var(--pg-text-light, #6b7280); }
+
+/* Trip inputs (standalone app: the user types the trip in, nothing is passed down) */
+.pk-trip { display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; }
+.pk-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.pk-field-wide { flex: 1; min-width: 14rem; }
+.pk-field span {
+  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--pg-text-light, #6b7280);
+}
+.pk-field input, .pk-field select {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 9px;
+  background: #fff; color: inherit; font-size: 0.88rem;
+}
+.pk-field input[type='number'] { width: 5.5rem; }
+
+.pk-trip-line {
+  margin: 1rem 0 0; font-size: 0.9rem; font-weight: 600;
+  display: flex; align-items: center; gap: 0.45rem;
+}
+
+.pk-form { display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; }
+.pk-form input {
+  flex: 1; min-width: 15rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 9px;
+  background: transparent; color: inherit; font-size: 0.88rem;
+}
+
+.pk-go, .pk-again {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.6rem 1.1rem; border: 0; border-radius: 9px;
+  background: var(--accent, #ec4899); color: #fff;
+  font-size: 0.88rem; font-weight: 600; cursor: pointer;
+}
+.pk-go:disabled { opacity: 0.65; cursor: default; }
+.pk-again { background: transparent; color: var(--accent, #ec4899); border: 1px solid rgba(236, 72, 153, 0.4); margin-top: 1rem; }
+
+.pk-spin {
+  width: 0.9rem; height: 0.9rem; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+  animation: pk-rot 0.7s linear infinite;
+}
+@keyframes pk-rot { to { transform: rotate(360deg); } }
+
+.pk-note {
+  margin: 1rem 0 0; padding: 0.7rem 0.9rem;
+  border-radius: 9px; background: rgba(139, 92, 246, 0.08);
+  font-size: 0.86rem; line-height: 1.55;
+  display: flex; gap: 0.5rem; align-items: flex-start;
+}
+
+.pk-group { margin-top: 1.1rem; }
+.pk-group h4 {
+  margin: 0 0 0.5rem; font-size: 0.74rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--pg-text-light, #6b7280);
+}
+
+.pk-item { display: flex; gap: 0.55rem; align-items: flex-start; padding: 0.4rem 0; }
+.pk-item-name { font-size: 0.9rem; font-weight: 500; }
+.pk-item-why { font-size: 0.79rem; color: var(--pg-text-light, #6b7280); line-height: 1.45; }
+
+.pk-missing {
+  margin-top: 1.2rem; padding: 0.9rem 1rem;
+  border: 1px dashed rgba(236, 72, 153, 0.35); border-radius: 11px;
+}
+.pk-missing h4 { margin: 0 0 0.5rem; font-size: 0.84rem; display: flex; align-items: center; gap: 0.4rem; }
+.pk-miss { font-size: 0.86rem; padding: 0.2rem 0; }
+
+.pk-error { margin-top: 0.9rem; font-size: 0.86rem; color: var(--accent, #ec4899); }

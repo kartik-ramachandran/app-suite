@@ -1,0 +1,17 @@
+.export-btns { display: inline-flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.export-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border-radius: 9px;
+  border: 1px solid var(--border-color, #e5e7eb); background: var(--bg-secondary, #f8fafc);
+  color: var(--text-secondary, #475569); font-size: 0.82rem; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: border-color .15s, color .15s, transform .12s;
+}
+.export-btn:hover { border-color: #d62976; color: #d62976; transform: translateY(-1px); }
+.export-btn i { font-size: 0.95rem; }
+.export-btns-sm .export-btn { padding: 5px 10px; font-size: 0.76rem; }
+.export-btn:disabled { opacity: 0.7; cursor: default; }
+.export-spin { width: 12px; height: 12px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; display: inline-block; animation: export-spin-kf 0.7s linear infinite; }
+@keyframes export-spin-kf { to { transform: rotate(360deg); } }
+
+
+

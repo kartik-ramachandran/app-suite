@@ -1,0 +1,197 @@
+/* Recipes — library, cook-tonight, and photo review. */
+
+/* A tab inside Kitchen, so it brings no page padding of its own. */
+.rc-tab { padding: 0.5rem 0 1rem; }
+
+.rc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.rc-head h2 { margin: 0 0 0.2rem; }
+.rc-muted { color: var(--pg-text-light, #6b7280); font-size: 0.88rem; margin: 0; }
+.rc-error { color: #b91c1c; font-size: 0.88rem; }
+
+.rc-primary {
+  display: inline-flex; align-items: center; gap: 0.5rem; flex-shrink: 0;
+  padding: 0.65rem 1.3rem; border: none; border-radius: 10px;
+  background: #d62976; color: #fff; font-weight: 600; cursor: pointer;
+}
+.rc-primary:disabled { opacity: 0.65; cursor: default; }
+
+.rc-ghost {
+  padding: 0.6rem 1.1rem; border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 10px; background: transparent; color: inherit; cursor: pointer;
+}
+.rc-danger { color: #b91c1c; border-color: rgba(185, 28, 28, 0.3); }
+
+.rc-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px; background: transparent; color: inherit; cursor: pointer;
+}
+
+/* Cook tonight ------------------------------------------------------------ */
+
+.rc-tonight {
+  margin-bottom: 1.75rem; padding: 1.1rem;
+  border: 1px solid rgba(214, 41, 118, 0.28);
+  border-radius: 14px; background: rgba(214, 41, 118, 0.05);
+}
+.rc-tonight-head { display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 0.9rem; }
+.rc-tonight-head h3 { margin: 0; font-size: 1.02rem; }
+
+/* Horizontal so it reads as a shortlist, not another library. */
+.rc-tonight-row { display: flex; gap: 0.8rem; overflow-x: auto; padding-bottom: 0.3rem; }
+
+.rc-match {
+  flex: 0 0 250px; text-align: left; cursor: pointer;
+  padding: 0.85rem; border-radius: 11px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--pg-bg-secondary, #fff); color: inherit;
+}
+.rc-match:hover { border-color: rgba(214, 41, 118, 0.4); }
+.rc-match-now { border-color: rgba(21, 128, 61, 0.4); }
+.rc-match-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
+.rc-match strong { display: block; font-size: 0.95rem; line-height: 1.35; }
+
+.rc-badge-now, .rc-badge-near {
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px;
+}
+.rc-badge-now { background: rgba(21, 128, 61, 0.14); color: #15803d; }
+.rc-badge-near { background: rgba(180, 83, 9, 0.14); color: #b45309; }
+.rc-missing { margin: 0.35rem 0 0; font-size: 0.76rem; color: var(--pg-text-light, #6b7280); }
+
+.rc-hint {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.8rem 1rem; margin-bottom: 1.5rem;
+  border: 1px dashed rgba(0, 0, 0, 0.16); border-radius: 11px;
+  font-size: 0.87rem; color: var(--pg-text-light, #6b7280);
+}
+
+/* Search + grid ----------------------------------------------------------- */
+
+.rc-search {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.6rem 0.9rem; margin-bottom: 1.3rem;
+  border: 1px solid rgba(0, 0, 0, 0.12); border-radius: 10px;
+}
+.rc-search input { flex: 1; border: none; background: transparent; color: inherit; outline: none; font-size: 0.92rem; }
+
+.rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+
+.rc-card {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  padding: 1rem; text-align: left; cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 13px;
+  background: var(--pg-bg-secondary, #fff); color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.rc-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.09); }
+.rc-card-top { display: flex; align-items: center; justify-content: space-between; }
+.rc-course { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #d62976; }
+.rc-fav { color: #eab308; }
+.rc-card strong { font-size: 0.98rem; line-height: 1.3; }
+.rc-card-desc {
+  margin: 0; font-size: 0.8rem; line-height: 1.45; color: var(--pg-text-light, #6b7280);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.rc-card-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.74rem; color: var(--pg-text-light, #6b7280); }
+.rc-card-src { font-size: 0.7rem; font-style: italic; color: var(--pg-text-light, #9ca3af); }
+
+.rc-empty {
+  text-align: center; padding: 3rem 1rem;
+  border: 1px dashed rgba(0, 0, 0, 0.18); border-radius: 14px;
+}
+.rc-empty .bi { font-size: 2rem; color: #d62976; }
+.rc-empty h3 { margin: 0.6rem 0 0.3rem; }
+.rc-empty p { margin: 0; color: var(--pg-text-light, #6b7280); font-size: 0.9rem; }
+
+/* Detail ------------------------------------------------------------------ */
+
+.rc-back {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: none; border: none; color: inherit; cursor: pointer;
+  padding: 0; margin-bottom: 1rem; font-size: 0.88rem;
+}
+.rc-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.rc-detail-head h2 { margin: 0; }
+.rc-lead { margin: 0.4rem 0 0.8rem; color: var(--pg-text-light, #4b5563); }
+.rc-detail-meta { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.5rem; }
+.rc-detail-meta span {
+  font-size: 0.75rem; padding: 3px 10px; border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+}
+.rc-diet { background: rgba(21, 128, 61, 0.12) !important; color: #15803d; }
+.rc-source { font-size: 0.8rem; font-style: italic; color: var(--pg-text-light, #9ca3af); margin: 0 0 1.4rem; }
+
+.rc-detail-cols { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 2.2rem; align-items: start; }
+.rc-detail-cols h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 0.7rem; }
+
+.rc-ing { list-style: none; padding: 0; margin: 0; }
+.rc-ing li { padding: 0.4rem 0; border-bottom: 1px solid rgba(0, 0, 0, 0.06); font-size: 0.9rem; }
+.rc-qty { display: inline-block; min-width: 72px; font-weight: 600; color: #d62976; }
+
+.rc-steps { margin: 0; padding-left: 1.2rem; }
+.rc-steps li { padding: 0.3rem 0 0.6rem; line-height: 1.65; }
+
+.rc-detail-actions { display: flex; gap: 0.7rem; margin-top: 2rem; }
+.rc-detail-actions em { font-style: normal; opacity: 0.8; }
+
+/* Substitutions ---------------------------------------------------------- */
+
+.rc-subs { margin-top: 2rem; padding-top: 1.4rem; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+.rc-subs h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 0.8rem; }
+.rc-subs .rc-ghost { display: inline-flex; align-items: center; gap: 0.5rem; }
+
+.rc-sub { padding: 0.7rem 0; border-bottom: 1px solid rgba(0, 0, 0, 0.06); }
+.rc-sub:last-child { border-bottom: none; }
+.rc-sub-line { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; font-size: 0.92rem; }
+.rc-sub p { margin: 0.3rem 0 0; font-size: 0.83rem; color: var(--pg-text-light, #6b7280); }
+
+/* Honesty about how good the swap is, rather than presenting all three the same. */
+.rc-conf {
+  font-style: normal; font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 2px 8px; border-radius: 999px;
+}
+.rc-conf-good { background: rgba(21, 128, 61, 0.14); color: #15803d; }
+.rc-conf-acceptable { background: rgba(180, 83, 9, 0.14); color: #b45309; }
+.rc-conf-last-resort { background: rgba(185, 28, 28, 0.12); color: #b91c1c; }
+
+
+
+
+/* Photo review ------------------------------------------------------------ */
+
+.rc-review-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.3rem; }
+.rc-review-head h2 { margin: 0 0 0.2rem; }
+
+.rc-draft {
+  padding: 1.2rem; margin-bottom: 1.2rem;
+  border: 1px solid rgba(214, 41, 118, 0.3); border-radius: 14px;
+  background: rgba(214, 41, 118, 0.04);
+}
+.rc-draft-title {
+  width: 100%; font-size: 1.1rem; font-weight: 700;
+  border: none; border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
+  background: transparent; color: inherit; padding: 0.2rem 0; margin-bottom: 0.5rem;
+}
+.rc-draft-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+.rc-draft-meta span { font-size: 0.74rem; padding: 2px 9px; border-radius: 999px; background: rgba(0, 0, 0, 0.06); }
+.rc-draft h4 { margin: 0.9rem 0 0.4rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.rc-draft-ing { list-style: none; padding: 0; margin: 0; font-size: 0.88rem; }
+.rc-draft-ing li { padding: 0.25rem 0; }
+.rc-draft-steps { margin: 0; padding-left: 1.2rem; font-size: 0.88rem; }
+.rc-draft-steps li { padding: 0.2rem 0; line-height: 1.6; }
+.rc-draft .rc-primary { margin-top: 1.1rem; }
+
+
+
+
+
+
+
+
+@media (max-width: 760px) {
+  .rc-detail-cols { grid-template-columns: 1fr; gap: 1.6rem; }
+  .rc-head { flex-direction: column; }
+  .rc-head .rc-primary { width: 100%; justify-content: center; }
+}

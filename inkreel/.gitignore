@@ -1,0 +1,17 @@
+# Backend
+bin/
+obj/
+*.user
+inkreel.db
+inkreel.db-shm
+inkreel.db-wal
+appsettings.Development.json
+appsettings.Production.json
+
+# Frontend
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.local
+videos/
