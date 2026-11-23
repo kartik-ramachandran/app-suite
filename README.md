@@ -1,5 +1,7 @@
 # App Suite
 
+**Website:** https://kartik-ramachandran.github.io/app-suite/
+
 29 standalone apps — each a full stack of its own (React + Vite frontend,
 .NET 8 backend) — plus **App Launcher**, a desktop app that starts and stops
 them and lets you chat with the Claude CLI on your computer (or from your phone
