@@ -236,7 +236,6 @@ const ALL_MODULE_LINKS = [
   { label: 'Bot Agents', path: '/bot-agents', icon: 'bi-chat-heart' },
   { label: 'Calendar', path: '/calendar', icon: 'bi-calendar-event' },
   { label: 'Invoice Agent', path: '/invoice-agent', icon: 'bi-receipt' },
-  { label: 'Doc Agent', path: '/pdf-tools', icon: 'bi-file-earmark-pdf' },
   { label: 'Research', path: '/research', icon: 'bi-search' },
   { label: 'Media Studio', path: '/media-studio', icon: 'bi-image' },
   { label: 'Chains', path: '/chains', icon: 'bi-diagram-3' },

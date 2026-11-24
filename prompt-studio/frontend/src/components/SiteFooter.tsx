@@ -28,7 +28,6 @@ function SiteFooter({ isAuthenticated = false }: SiteFooterProps) {
           <div className="footer-section">
             <h4>Resources</h4>
             <ul>
-              <li><Link to="/free-pdf-tools">Free PDF Tools</Link></li>
               <li><Link to="/about">About Us</Link></li>
               <li><Link to="/faq">FAQ</Link></li>
               <li><Link to="/blog">Blog</Link></li>

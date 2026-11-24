@@ -289,24 +289,6 @@
       ]
     },
     {
-      "slug": "pdf-tools",
-      "title": "PDF Tools",
-      "blurb": "Convert, merge, compare, fill, redact and archive PDFs.",
-      "icon": "bi-file-earmark-pdf",
-      "fePort": 5292,
-      "bePort": 5342,
-      "palette": [
-        "#dc2626",
-        "#b91c1c",
-        "#2563eb"
-      ],
-      "pages": [
-        {
-          "path": "/pdf-tools"
-        }
-      ]
-    },
-    {
       "slug": "emmd-studio",
       "title": "EMMD Studio",
       "blurb": "Write, seal, and verify Enhanced Markdown documents.",

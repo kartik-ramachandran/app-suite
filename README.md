@@ -2,7 +2,7 @@
 
 **Website:** https://kartik-ramachandran.github.io/app-suite/
 
-29 standalone apps — each a full stack of its own (React + Vite frontend,
+28 standalone apps — each a full stack of its own (React + Vite frontend,
 .NET 8 backend) — plus **App Launcher**, a desktop app that starts and stops
 them and lets you chat with the Claude CLI on your computer (or from your phone
 on the same Wi-Fi).
@@ -57,6 +57,9 @@ Each app's README lists its ports, settings and pages.
 
 ## The apps
 
+For PDF work (convert, merge, compress, OCR, redact, compare, fill forms), use
+[Document Suite](https://github.com/kartik-ramachandran/DocumentSuite), a separate open-source project.
+
 | App | Frontend | Backend | What it does |
 |---|---|---|---|
 | [Travel Manager](travel-manager/README.md) | 5273 | 5320 | Trip planning, flight prices, live travel intel — paired with your wardrobe for packing lists. |
@@ -78,7 +81,6 @@ Each app's README lists its ports, settings and pages.
 | [Meeting Manager](meeting-manager/README.md) | 5289 | 5339 | Calendar sync, live meeting capture, follow-ups, and availability. |
 | [Interaction Intelligence](interaction-intelligence/README.md) | 5290 | 5340 | Turn any recorded call or consult into transcripts, summaries, and next steps. |
 | [Prism](prism/README.md) | 5291 | 5341 | Upload a messy spreadsheet and let AI agents profile, map, and clean it. |
-| [PDF Tools](pdf-tools/README.md) | 5292 | 5342 | Convert, merge, compare, fill, redact and archive PDFs. |
 | [EMMD Studio](emmd-studio/README.md) | 5293 | 5343 | Write, seal, and verify Enhanced Markdown documents. |
 | [Cosmos](cosmos/README.md) | 5294 | 5344 | Your knowledge cosmos: everything you capture, linked into one graph. |
 | [Research Lab](research/README.md) | 5295 | 5345 | Deep research and agent swarms on any question. |

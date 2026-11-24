@@ -12,7 +12,7 @@ npm start
 
 ## What it does
 
-**Apps tab** — all 29 apps, read from `launcher/apps.json`
+**Apps tab** — all 28 apps, read from `launcher/apps.json`
 plus the three hand-built apps. For each one:
 
 - **Start** runs its backend (`dotnet run`) and frontend (`npm run dev`) on its

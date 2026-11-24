@@ -27,7 +27,7 @@ GROUPS = [
     ("Snap it", ["card-scanner", "label-scanner", "price-checker", "email-tasks", "whiteboard"]),
     ("Learn & read", ["study-manager", "book-reader", "research", "cosmos"]),
     ("Create", ["inkreel", "media-studio", "content-studio", "prompt-studio", "emmd-studio"]),
-    ("Work & data", ["meeting-manager", "interaction-intelligence", "prism", "pdf-tools",
+    ("Work & data", ["meeting-manager", "interaction-intelligence", "prism",
                      "agent-hub", "kit-builder", "colony"]),
 ]
 

@@ -123,7 +123,7 @@ public class SourceChatController : ControllerBase
 
         var chunks = ChunkPages(pages);
         if (chunks.Count == 0)
-            return BadRequest(new { error = "No text was found. Scanned PDFs need OCR first (try PDF Tools)." });
+            return BadRequest(new { error = "No text was found. Scanned PDFs need OCR first (Document Suite can do that)." });
 
         var title = Path.GetFileNameWithoutExtension(file.FileName);
         return Ok(await SaveAsync(ext == ".pdf" ? "pdf" : "document", string.IsNullOrWhiteSpace(title) ? "Untitled" : title, null, chunks));
