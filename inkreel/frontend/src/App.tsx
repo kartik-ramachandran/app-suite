@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import Layout from './components/Layout'
 import SignIn from './pages/SignIn'
+import SourceChat from './pages/SourceChat'
 import Visualizer from './pages/Visualizer'
 import VideoStudio from './pages/VideoStudio'
 import { isLocalMode } from './services/localMode'
@@ -17,6 +18,7 @@ export default function App() {
     <Routes>
       <Route path="/signin" element={isLocalMode() ? <Navigate to="/ink" replace /> : <SignIn />} />
       <Route path="/ink" element={<RequireAuth><Visualizer /></RequireAuth>} />
+      <Route path="/chat" element={<RequireAuth><SourceChat /></RequireAuth>} />
       <Route path="/video" element={<RequireAuth><VideoStudio /></RequireAuth>} />
       <Route path="*" element={<Navigate to="/ink" replace />} />
     </Routes>

@@ -25,11 +25,16 @@ const emit = msg => {
 // handed to each app's backend as environment variables when it starts.
 const settingsFile = () => path.join(app.getPath('userData'), 'settings.json')
 const DEFAULT_SETTINGS = {
-  ai: { preferred: 'Claude', anthropicKey: '', anthropicModel: '', azureEndpoint: '', azureKey: '', azureDeployment: '', openaiKey: '', openaiModel: '' },
+  ai: { preferred: 'Claude', anthropicKey: '', anthropicModel: '', azureEndpoint: '', azureKey: '', azureDeployment: '', openaiKey: '', openaiModel: '',
+        ollamaEnabled: false, ollamaUrl: '', ollamaModel: '' },
   phone: { allowEdits: false },
 }
 function loadSettings() {
-  try { return { ...DEFAULT_SETTINGS, ...JSON.parse(fs.readFileSync(settingsFile(), 'utf8')) } } catch { return structuredClone(DEFAULT_SETTINGS) }
+  try {
+    const saved = JSON.parse(fs.readFileSync(settingsFile(), 'utf8'))
+    // Older settings files lack newer fields (e.g. Ollama); fill them from the defaults.
+    return { ...DEFAULT_SETTINGS, ...saved, ai: { ...DEFAULT_SETTINGS.ai, ...(saved.ai || {}) }, phone: { ...DEFAULT_SETTINGS.phone, ...(saved.phone || {}) } }
+  } catch { return structuredClone(DEFAULT_SETTINGS) }
 }
 function saveSettings(s) {
   fs.mkdirSync(path.dirname(settingsFile()), { recursive: true })
@@ -44,6 +49,8 @@ function aiEnv() {
   set('Anthropic__ApiKey', a.anthropicKey); set('Anthropic__Model', a.anthropicModel)
   set('AzureOpenAI__Endpoint', a.azureEndpoint); set('AzureOpenAI__ApiKey', a.azureKey); set('AzureOpenAI__DeploymentName', a.azureDeployment)
   set('OpenAI__ApiKey', a.openaiKey); set('OpenAI__DefaultModel', a.openaiModel)
+  // A local model through Ollama: no key, nothing leaves this computer.
+  if (a.ollamaEnabled) { env.Ollama__Enabled = 'true'; set('Ollama__BaseUrl', a.ollamaUrl); set('Ollama__Model', a.ollamaModel) }
   return env
 }
 
@@ -54,9 +61,30 @@ function publicSettings() {
     ai: {
       preferred: a.preferred,
       anthropicModel: a.anthropicModel, azureEndpoint: a.azureEndpoint, azureDeployment: a.azureDeployment, openaiModel: a.openaiModel,
+      ollamaEnabled: !!a.ollamaEnabled, ollamaUrl: a.ollamaUrl, ollamaModel: a.ollamaModel,
       hasAnthropicKey: !!a.anthropicKey, hasAzureKey: !!a.azureKey, hasOpenaiKey: !!a.openaiKey,
     },
     phone: settings.phone,
+  }
+}
+
+// Is Ollama running here, and which models has it pulled? Asked from Settings.
+// Only a loopback address is checked, so this can't be used to probe the network.
+async function ollamaStatus(url) {
+  let base
+  try {
+    base = new URL((url || settings.ai.ollamaUrl || 'http://localhost:11434').trim())
+  } catch { return { running: false, error: 'That address isn’t valid.' } }
+  if (!['localhost', '127.0.0.1', '[::1]'].includes(base.hostname)) {
+    return { running: false, error: 'Only an Ollama on this computer (localhost) can be checked.' }
+  }
+  try {
+    const res = await fetch(new URL('/api/tags', base), { signal: AbortSignal.timeout(2500) })
+    if (!res.ok) return { running: false, error: `Ollama answered ${res.status}.` }
+    const data = await res.json()
+    return { running: true, models: (data.models || []).map(m => m.name).sort() }
+  } catch {
+    return { running: false, error: 'Ollama isn’t running. Install it from ollama.com and open it.' }
   }
 }
 
@@ -131,12 +159,15 @@ async function call(method, args, { remote: fromPhone = false } = {}) {
         if (next.ai?.[clear]) a[field] = ''
         else if (next.ai?.[field]) a[field] = String(next.ai[field]).trim()
       }
-      for (const f of ['preferred', 'anthropicModel', 'azureEndpoint', 'azureDeployment', 'openaiModel']) a[f] = keep(a[f], next.ai?.[f])
-      if (!['Claude', 'Azure', 'OpenAI'].includes(a.preferred)) a.preferred = 'Claude'
+      for (const f of ['preferred', 'anthropicModel', 'azureEndpoint', 'azureDeployment', 'openaiModel', 'ollamaUrl', 'ollamaModel']) a[f] = keep(a[f], next.ai?.[f])
+      if (typeof next.ai?.ollamaEnabled === 'boolean') a.ollamaEnabled = next.ai.ollamaEnabled
+      if (!['Claude', 'Azure', 'OpenAI', 'Ollama'].includes(a.preferred)) a.preferred = 'Claude'
       if (next.phone && typeof next.phone.allowEdits === 'boolean') settings.phone.allowEdits = next.phone.allowEdits
       saveSettings(settings)
       return publicSettings()
     }
+
+    case 'ollamaStatus': if (fromPhone) throw new Error('Check Ollama on the computer.'); return ollamaStatus(args[0])
 
     case 'phoneStatus': return remote.status()
     case 'phoneStart': if (fromPhone) throw new Error('Only the computer can do that.'); return remote.start()

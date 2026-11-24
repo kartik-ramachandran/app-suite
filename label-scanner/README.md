@@ -49,20 +49,29 @@ Fresh SQLite database (`labelscanner.db`) on first run — register an account t
 
 ## AI providers
 
-Every AI feature runs on **Claude**, **Azure OpenAI** or **OpenAI** — fill in any
-one (or more) in `appsettings.json`, or set them as environment variables:
+Every AI feature runs on **Claude**, **Azure OpenAI**, **OpenAI**, or a **local
+model through Ollama** (no API key, nothing leaves your computer). Fill in any one
+(or more) in `appsettings.json`, or set them as environment variables:
 
 | Provider | Settings | Environment variables |
 |---|---|---|
 | Claude | `Anthropic:ApiKey`, `Anthropic:Model` (default `claude-sonnet-5-5`) | `Anthropic__ApiKey`, `Anthropic__Model` |
 | Azure OpenAI | `AzureOpenAI:Endpoint`, `AzureOpenAI:ApiKey`, `AzureOpenAI:DeploymentName` | `AzureOpenAI__Endpoint`, `AzureOpenAI__ApiKey`, `AzureOpenAI__DeploymentName` |
 | OpenAI | `OpenAI:ApiKey`, `OpenAI:DefaultModel` (default `gpt-4o`) | `OpenAI__ApiKey`, `OpenAI__DefaultModel` |
+| Ollama (local) | `Ollama:Enabled` = `true`, `Ollama:BaseUrl` (default `http://localhost:11434`), `Ollama:Model` (default `llama3.2`) | `Ollama__Enabled`, `Ollama__BaseUrl`, `Ollama__Model` |
 
-`AI:PreferredProvider` (`Claude`, `Azure` or `OpenAI`) picks which one answers
-when more than one is configured; otherwise the first configured of Claude,
-Azure, OpenAI is used. The switch lives in `Services/AiChatClients.cs`; Claude
-calls go through `Services/ClaudeChatClient.cs` (Anthropic Messages API, text +
-images + PDFs + tools + streaming).
+`AI:PreferredProvider` (`Claude`, `Azure`, `OpenAI` or `Ollama`) picks which one
+answers when more than one is configured; otherwise the first configured of
+Claude, Azure, OpenAI, Ollama is used. The switch lives in `Services/AiChatClients.cs`;
+Claude calls go through `Services/ClaudeChatClient.cs` (Anthropic Messages API,
+text + images + PDFs + tools + streaming).
+
+**Running free with Ollama:** install [Ollama](https://ollama.com), run
+`ollama pull llama3.2`, then set `Ollama:Enabled=true` and
+`AI:PreferredProvider=Ollama`. Features that read photos need a vision model
+(for example `ollama pull llama3.2-vision`, then `Ollama:Model=llama3.2-vision`).
+Small local models are slower and less accurate than the cloud ones, so expect
+simpler answers. Voice transcription (Whisper) still needs an OpenAI key.
 
 ## Local mode (no sign-in)
 

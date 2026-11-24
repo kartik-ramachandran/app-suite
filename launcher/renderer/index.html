@@ -65,10 +65,10 @@
       <div class="cards">
         <div class="card" id="aiCard">
           <h2>AI keys for the apps</h2>
-          <p class="muted">Every app runs on Claude, Azure OpenAI or OpenAI. Keys are stored on this computer only and handed to each app when it starts.</p>
+          <p class="muted">Every app runs on Claude, Azure OpenAI, OpenAI, or a free local model through Ollama. Keys are stored on this computer only and handed to each app when it starts.</p>
           <label class="field">Preferred provider
             <select id="aiPreferred">
-              <option>Claude</option><option>Azure</option><option>OpenAI</option>
+              <option>Claude</option><option>Azure</option><option>OpenAI</option><option>Ollama</option>
             </select>
           </label>
           <fieldset><legend>Claude</legend>
@@ -83,6 +83,16 @@
           <fieldset><legend>OpenAI</legend>
             <label class="field">API key <input id="openaiKey" type="password" autocomplete="off" /></label>
             <label class="field">Model <input id="openaiModel" placeholder="gpt-4o" /></label>
+          </fieldset>
+          <fieldset id="ollamaBox"><legend>Ollama <span class="free-tag">FREE · NO KEY</span></legend>
+            <p class="muted small">Runs a model on this computer, so nothing is sent anywhere and nothing is charged. Install <a href="https://ollama.com" target="_blank" rel="noreferrer">Ollama</a>, then pull a model, e.g. <code>ollama pull llama3.2</code>. For apps that read photos, use a vision model such as <code>llama3.2-vision</code>.</p>
+            <label class="check"><input type="checkbox" id="ollamaEnabled" /> Use Ollama</label>
+            <label class="field">Address <input id="ollamaUrl" placeholder="http://localhost:11434" /></label>
+            <label class="field">Model
+              <input id="ollamaModel" list="ollamaModels" placeholder="llama3.2" />
+              <datalist id="ollamaModels"></datalist>
+            </label>
+            <div class="row"><button id="ollamaCheck" class="btn ghost" type="button">Check Ollama</button><span id="ollamaState" class="muted small"></span></div>
           </fieldset>
           <div class="row">
             <button id="saveAi" class="btn hot">Save</button>

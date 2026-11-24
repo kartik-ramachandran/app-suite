@@ -56,16 +56,18 @@ builder.Services.AddSingleton<MediaStudio.Api.Services.JsonSchemaValidator>();
 builder.Services.AddScoped<MediaStudio.Api.Services.PromptLinter>();
 builder.Services.AddScoped<MediaStudio.Api.Services.TeamService>();
 builder.Services.AddScoped<ClaudeService>();
+builder.Services.AddScoped<OllamaService>();
 builder.Services.AddScoped<AIServiceManager>(provider =>
 {
     var bedrockService = provider.GetRequiredService<BedrockService>();
     var openAIService = provider.GetRequiredService<OpenAIService>();
     var claudeService = provider.GetRequiredService<ClaudeService>();
+    var ollamaService = provider.GetRequiredService<OllamaService>();
     var azureOpenAIService = provider.GetRequiredService<AzureOpenAIService>();
     var logger = provider.GetRequiredService<ILogger<AIServiceManager>>();
     var config = provider.GetRequiredService<IConfiguration>();
 
-    return new AIServiceManager(new IAIService[] { claudeService, azureOpenAIService, openAIService, bedrockService }, logger, config);
+    return new AIServiceManager(new IAIService[] { claudeService, azureOpenAIService, openAIService, bedrockService, ollamaService }, logger, config);
 });
 builder.Services.AddScoped<IAIService>(provider => provider.GetRequiredService<AIServiceManager>());
 

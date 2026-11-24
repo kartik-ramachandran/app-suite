@@ -51,6 +51,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <NavLink to="/study" className={({ isActive }) => `tm-nav-link${isActive ? ' tm-nav-active' : ''}`}>
               <PhosphorIcon className="bi bi-mortarboard" /> Study Studio
             </NavLink>
+            <NavLink to="/chat" className={({ isActive }) => `tm-nav-link${isActive ? ' tm-nav-active' : ''}`}>
+              <PhosphorIcon className="bi bi-chat-square-quote" /> Chat with a source
+            </NavLink>
           </nav>
           <div className="tm-user">
             {headerActions}

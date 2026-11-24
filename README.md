@@ -9,7 +9,8 @@ on the same Wi-Fi).
 
 Every app:
 
-- runs on **Claude**, **Azure OpenAI** or **OpenAI** — bring your own key;
+- runs on **Claude**, **Azure OpenAI** or **OpenAI** — bring your own key — or **free on your own
+  computer with [Ollama](https://ollama.com)**, with no key at all;
 - has a **local mode** with no sign-in for running on your own machine
   (it only answers on that machine, enforced in code);
 - is independent: nothing is shared between apps at runtime.
@@ -28,7 +29,7 @@ npm start
 ```
 
 In the launcher: **Settings** → add an AI key (Claude, Azure OpenAI or
-OpenAI) → **Apps** → **Start** on any app → **Open**. The first start of each
+OpenAI), or turn on **Ollama** to run free on your own computer → **Apps** → **Start** on any app → **Open**. The first start of each
 app installs its packages, so give it a minute.
 
 ### Running one app by hand
@@ -41,6 +42,18 @@ cd plant-doctor/frontend && npm install && npm run dev
 ```
 
 Each app's README lists its ports, settings and pages.
+
+
+## New
+
+- **Free local AI with Ollama** — every app can run on a model on your own
+  computer: install [Ollama](https://ollama.com), run `ollama pull llama3.2`, then
+  turn on Ollama in the launcher's Settings. No key, nothing sent anywhere.
+  Small local models give simpler answers than the cloud ones.
+- **Chat with a source** (Study Manager, InkReel) — add a PDF, a Word file or a
+  YouTube link and ask questions; answers cite the page or the moment in the video.
+- **Talk it through** (Life Manager) — a short spoken conversation that turns into
+  today's journal entry. Your browser does the listening and speaking.
 
 ## The apps
 

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import AppShell from './components/AppShell'
 import StandaloneSignIn from './pages/StandaloneSignIn'
+import SourceChat from './pages/SourceChat'
 import StudyStudioPage from './pages/StudyStudio'
 import { isLocalMode } from './services/localMode'
 
@@ -16,6 +17,7 @@ export default function App() {
     <Routes>
       <Route path="/signin" element={isLocalMode() ? <Navigate to="/study" replace /> : <StandaloneSignIn />} />
       <Route path="/study" element={<RequireAuth><StudyStudioPage /></RequireAuth>} />
+      <Route path="/chat" element={<RequireAuth><SourceChat /></RequireAuth>} />
       <Route path="*" element={<Navigate to="/study" replace />} />
     </Routes>
   )

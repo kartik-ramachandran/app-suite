@@ -1,380 +1,83 @@
+// The same IAIService implementation as AzureOpenAIService.cs, running on a local Ollama model (no API key).
+using OpenAI;
+using Microsoft.Extensions.Logging.Abstractions;
+using OpenAI.Chat;
 using Research.Api.Models;
-using System.Text.Json;
-using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 
 namespace Research.Api.Services;
 
 public class OllamaService : IAIService
 {
-    private readonly HttpClient _httpClient;
+    private readonly OpenAIClient? _client;
+    private readonly string _deploymentName;
     private readonly ILogger<OllamaService> _logger;
-    private readonly string _baseUrl;
-    private readonly string _defaultModel;
-    private List<string>? _availableModels;
 
-    public bool IsAvailable => CheckAvailabilityAsync().GetAwaiter().GetResult();
+    public bool IsAvailable => _client != null;
     public string ProviderName => "Ollama";
-    public List<string> SupportedModels => GetAvailableModelsAsync().GetAwaiter().GetResult();
-
-    private const string SafetyClause =
-        "\n\nIMPORTANT: Do NOT generate content that is violent, sexually explicit, hateful, " +
-        "discriminatory, promotes illegal activities, or encourages self-harm. " +
-        "Refuse any such request and ask for a safe alternative.";
-
-    private static readonly Dictionary<string, string> StyleDescriptions = new()
-    {
-        { "professional", "Use a formal, business-appropriate tone. Be clear, concise, and authoritative. Avoid casual language and maintain a polished, corporate communication style." },
-        { "creative", "Use imaginative, expressive language. Be playful with words, use metaphors and vivid descriptions. Encourage creative thinking and unique perspectives." },
-        { "technical", "Use precise, detailed technical language. Include specific terminology, structured explanations, and focus on accuracy and completeness. Be methodical and thorough." },
-        { "conversational", "Use a friendly, natural dialogue style. Be warm and approachable, like talking to a helpful friend. Use casual but respectful language." },
-        { "persuasive", "Use compelling, action-oriented language. Focus on benefits, create urgency, and motivate action. Be confident and use strong calls-to-action." }
-    };
-
-    private static readonly Dictionary<string, string[]> CategorySuggestions = new()
-    {
-        { "marketing", new[] { "Create compelling headlines", "Write persuasive calls-to-action", "Generate engaging social media content", "Craft email subject lines with high open rates", "Develop brand voice consistency" } },
-        { "support", new[] { "Handle customer complaints with empathy", "Provide accurate troubleshooting steps", "Escalate complex issues appropriately", "Maintain professional tone under pressure", "Follow up on unresolved issues" } },
-        { "code", new[] { "Write clean, maintainable code", "Follow best practices and conventions", "Include helpful comments", "Handle edge cases gracefully", "Optimize for performance" } },
-        { "writing", new[] { "Maintain consistent tone", "Use clear and concise language", "Structure content logically", "Engage the reader", "Include relevant examples" } },
-        { "sales", new[] { "Identify customer pain points", "Present solutions effectively", "Handle objections professionally", "Create urgency", "Build rapport and trust" } }
-    };
+    public List<string> SupportedModels => new() { _deploymentName };
 
     public OllamaService(IConfiguration configuration, ILogger<OllamaService> logger)
     {
-        _baseUrl = configuration["Ollama:BaseUrl"] ?? "http://localhost:11434";
-        _defaultModel = configuration["Ollama:DefaultModel"] ?? "llama2";
-        _httpClient = new HttpClient
-        {
-            BaseAddress = new Uri(_baseUrl),
-            Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("Ollama:TimeoutSeconds", 120))
-        };
         _logger = logger;
+        _deploymentName = AiChatClients.OllamaModel(configuration);
+
+        if (!AiChatClients.IsOllamaEnabled(configuration))
+        {
+            _client = null;
+            _logger.LogInformation("Ollama not enabled — set Ollama:Enabled=true to use a local model.");
+            return;
+        }
+
+        _client = AiChatClients.OllamaClient(configuration);
+        _logger.LogInformation("Ollama initialised with local model: {Model}", _deploymentName);
     }
 
-    private async Task<bool> CheckAvailabilityAsync()
-    {
-        try
-        {
-            var response = await _httpClient.GetAsync("/api/tags");
-            return response.IsSuccessStatusCode;
-        }
-        catch
-        {
-            return false;
-        }
-    }
+    private ChatClient Chat(string? deploymentOverride = null)
+        => _client!.GetChatClient(_deploymentName);
 
-    private async Task<List<string>> GetAvailableModelsAsync()
-    {
-        if (_availableModels != null)
-            return _availableModels;
-
-        try
-        {
-            var response = await _httpClient.GetAsync("/api/tags");
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<OllamaTagsResponse>();
-                _availableModels = result?.Models?.Select(m => m.Name).ToList() ?? new List<string>();
-                return _availableModels;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to fetch Ollama models");
-        }
-
-        // Fallback to common models if we can't fetch
-        _availableModels = new List<string> { "llama2", "mistral", "codellama", "llama2:13b", "mistral:7b" };
-        return _availableModels;
-    }
+    // ── Core: chat completion ────────────────────────────────────────────────
 
     public async Task<PromptTestResponse> TestPromptAsync(PromptTestRequest request)
     {
-        try
+        if (!IsAvailable) throw new InvalidOperationException("Ollama is not enabled.");
+
+        var msgs = new List<ChatMessage>();
+        if (!string.IsNullOrWhiteSpace(request.PromptContent))
+            msgs.Add(new SystemChatMessage(request.PromptContent));
+        msgs.Add(new UserChatMessage(request.UserInput ?? string.Empty));
+
+        var resp = await Chat().CompleteChatAsync(msgs);
+        return new PromptTestResponse
         {
-            var model = _defaultModel;
-            var fullPrompt = $"{request.PromptContent}\n\nUser Input: {request.UserInput}\n\nResponse:";
-
-            var ollamaRequest = new OllamaGenerateRequest
-            {
-                Model = model,
-                Prompt = fullPrompt,
-                Stream = false
-            };
-
-            var response = await _httpClient.PostAsJsonAsync("/api/generate", ollamaRequest);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>();
-            if (result == null)
-                throw new Exception("Invalid response from Ollama");
-
-            return new PromptTestResponse
-            {
-                Result = result.Response?.Trim() ?? "",
-                Model = model,
-                TokensUsed = (int)(result.EvalCount ?? 0)
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error testing prompt with Ollama");
-            throw;
-        }
+            Result = resp.Value.Content[0].Text,
+            Model = _deploymentName,
+            TokensUsed = resp.Value.Usage.TotalTokenCount
+        };
     }
 
-    public async Task<GoalSuggestionsResult> GenerateGoalSuggestionsAsync(string intent, string mode = "intent")
+    public async IAsyncEnumerable<string> StreamExecuteAsync(
+        string systemPrompt,
+        List<ConversationMessage> messages,
+        string? modelOverride,
+        [EnumeratorCancellation] CancellationToken ct = default)
     {
-        var fallbackGoals = CategorySuggestions.ContainsKey(intent.ToLower())
-            ? CategorySuggestions[intent.ToLower()].ToList()
-            : new List<string> { "Create clear instructions", "Define expected output format", "Add context information" };
+        if (!IsAvailable) throw new InvalidOperationException("Ollama is not enabled.");
 
-        var prompt = $"Generate 5 specific, actionable goals for creating an AI prompt with the following intent: {intent}\n\nRespond with a JSON array of strings, each representing a goal.{SafetyClause}";
+        var chatMessages = new List<ChatMessage>();
+        if (!string.IsNullOrWhiteSpace(systemPrompt))
+            chatMessages.Add(new SystemChatMessage(systemPrompt));
+        foreach (var m in messages)
+            chatMessages.Add(m.Role == "user"
+                ? (ChatMessage)new UserChatMessage(m.Content)
+                : new AssistantChatMessage(m.Content));
 
-        try
-        {
-            var request = new OllamaGenerateRequest
-            {
-                Model = _defaultModel,
-                Prompt = prompt,
-                Stream = false
-            };
-
-            var response = await _httpClient.PostAsJsonAsync("/api/generate", request);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>();
-            if (result?.Response == null)
-                return new GoalSuggestionsResult(fallbackGoals, "professional");
-
-            try
-            {
-                var suggestions = JsonSerializer.Deserialize<List<string>>(result.Response) ?? fallbackGoals;
-                return new GoalSuggestionsResult(suggestions, "professional");
-            }
-            catch
-            {
-                var lines = result.Response.Split('\n')
-                    .Where(line => !string.IsNullOrWhiteSpace(line) && line.Length > 10)
-                    .Take(5)
-                    .ToList();
-                return new GoalSuggestionsResult(lines, "professional");
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error generating goal suggestions with Ollama");
-            return new GoalSuggestionsResult(fallbackGoals, "professional");
-        }
+        await foreach (var update in Chat(modelOverride).CompleteChatStreamingAsync(chatMessages, cancellationToken: ct))
+            foreach (var part in update.ContentUpdate)
+                yield return part.Text;
     }
 
-    public async Task<string> GeneratePromptFromGoalsAsync(string intent, List<string> selectedGoals, string? additionalContext)
-    {
-        var goalsText = string.Join(", ", selectedGoals);
-        var contextText = string.IsNullOrEmpty(additionalContext) ? "" : $"\n\nAdditional Context: {additionalContext}";
-
-        var prompt = $"Create a detailed AI prompt for the following intent: {intent}\n\nGoals to achieve: {goalsText}{contextText}\n\nGenerate a comprehensive prompt that incorporates these goals and provides clear instructions for an AI assistant.{SafetyClause}";
-
-        try
-        {
-            var request = new OllamaGenerateRequest
-            {
-                Model = _defaultModel,
-                Prompt = prompt,
-                Stream = false
-            };
-
-            var response = await _httpClient.PostAsJsonAsync("/api/generate", request);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>();
-            return result?.Response?.Trim() ?? "Error generating prompt. Please try again.";
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error generating prompt from goals with Ollama");
-            return $"Create a prompt for: {intent}\n\nGoals: {goalsText}\n\n{GetStyleInstruction("professional")}";
-        }
-    }
-
-    public async Task<List<string>> GenerateRefinementSuggestionsAsync(string currentPrompt)
-    {
-        var prompt = $"Analyze this AI prompt and suggest 5 specific improvements:\n\n\"{currentPrompt}\"\n\nRespond with a JSON array of strings, each representing a specific refinement suggestion.{SafetyClause}";
-
-        try
-        {
-            var request = new OllamaGenerateRequest
-            {
-                Model = _defaultModel,
-                Prompt = prompt,
-                Stream = false
-            };
-
-            var response = await _httpClient.PostAsJsonAsync("/api/generate", request);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>();
-            if (result?.Response == null)
-                return new List<string> {
-                    "Add more specific examples",
-                    "Include clear success criteria",
-                    "Specify the desired output format",
-                    "Add context about the target audience",
-                    "Include constraints or limitations"
-                };
-
-            try
-            {
-                var suggestions = JsonSerializer.Deserialize<List<string>>(result.Response);
-                return suggestions ?? new List<string> {
-                    "Add more specific examples",
-                    "Include clear success criteria",
-                    "Specify the desired output format",
-                    "Add context about the target audience",
-                    "Include constraints or limitations"
-                };
-            }
-            catch
-            {
-                return result.Response.Split('\n')
-                    .Where(line => !string.IsNullOrWhiteSpace(line) && line.Length > 10)
-                    .Take(5)
-                    .ToList();
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error generating refinement suggestions with Ollama");
-            return new List<string> {
-                "Add more specific examples",
-                "Include clear success criteria",
-                "Specify the desired output format",
-                "Add context about the target audience",
-                "Include constraints or limitations"
-            };
-        }
-    }
-
-    public async Task<string> RefinePromptAsync(string currentPrompt, List<string> selectedRefinements, string? additionalContext)
-    {
-        var refinementsText = string.Join(", ", selectedRefinements);
-        var contextText = string.IsNullOrEmpty(additionalContext) ? "" : $"\n\nAdditional Context: {additionalContext}";
-
-        var prompt = $"Refine this AI prompt by incorporating the following improvements:\n\nOriginal Prompt:\n\"{currentPrompt}\"\n\nImprovements to apply: {refinementsText}{contextText}\n\nGenerate the improved version of the prompt.{SafetyClause}";
-
-        try
-        {
-            var request = new OllamaGenerateRequest
-            {
-                Model = _defaultModel,
-                Prompt = prompt,
-                Stream = false
-            };
-
-            var response = await _httpClient.PostAsJsonAsync("/api/generate", request);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>();
-            return result?.Response?.Trim() ?? currentPrompt;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error refining prompt with Ollama");
-            return currentPrompt; // Return original if refinement fails
-        }
-    }
-
-    // Advanced features - basic implementations with fallbacks
-    public async Task<List<string>> GenerateGoalSuggestionsWithPersonaAsync(string intent, string style, string category, string? personaPrompt)
-    {
-        // For Ollama, we'll combine persona context with basic goal generation
-        var personaContext = string.IsNullOrEmpty(personaPrompt) ? "" : $"Considering this persona: {personaPrompt}\n\n";
-        var enhancedIntent = $"{personaContext}Generate goals for: {intent} (Style: {style}, Category: {category})";
-
-        return (await GenerateGoalSuggestionsAsync(enhancedIntent, "goal")).Goals;
-    }
-
-    public async Task<string> GeneratePromptWithPersonaAsync(string intent, List<string> selectedGoals, string? additionalContext, string? personaPrompt)
-    {
-        var personaContext = string.IsNullOrEmpty(personaPrompt) ? "" : $"\n\nPersona Context: {personaPrompt}";
-        var enhancedContext = (additionalContext ?? "") + personaContext;
-
-        return await GeneratePromptFromGoalsAsync(intent, selectedGoals, enhancedContext);
-    }
-
-    public Task<string> DescribeScreenAsync(string base64Image)
-        => Task.FromResult(string.Empty);
-
-    public async Task<string> TranscribeAudioAsync(Stream audioStream, string fileName)
-    {
-        // Ollama doesn't have built-in audio transcription
-        // This would require additional setup with Whisper or similar
-        throw new NotSupportedException("Audio transcription is not supported by Ollama. Please use OpenAI for audio features.");
-    }
-
-    public async Task<string> RefineTranscriptionToIntentAsync(string transcription)
-    {
-        // Related to audio transcription
-        throw new NotSupportedException("Audio transcription refinement is not supported by Ollama. Please use OpenAI for audio features.");
-    }
-
-    public async Task<string> QuickRefineAsync(string currentPrompt, string refinementInstruction)
-    {
-        var prompt = $"Refine this prompt using the following instruction: {refinementInstruction}\n\nOriginal Prompt:\n\"{currentPrompt}\"\n\nProvide the refined version:{SafetyClause}";
-
-        try
-        {
-            var request = new OllamaGenerateRequest
-            {
-                Model = _defaultModel,
-                Prompt = prompt,
-                Stream = false
-            };
-
-            var response = await _httpClient.PostAsJsonAsync("/api/generate", request);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>();
-            return result?.Response?.Trim() ?? currentPrompt;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error with quick refine using Ollama");
-            return currentPrompt;
-        }
-    }
-
-    public async Task<string> GeneratePersonaAsync(string description)
-    {
-        var prompt = $"Create a detailed AI persona based on this description: {description}\n\nGenerate a comprehensive persona that an AI assistant can use to maintain consistent behavior and personality.{SafetyClause}";
-
-        try
-        {
-            var request = new OllamaGenerateRequest
-            {
-                Model = _defaultModel,
-                Prompt = prompt,
-                Stream = false
-            };
-
-            var response = await _httpClient.PostAsJsonAsync("/api/generate", request);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>();
-            return result?.Response?.Trim() ?? "Error generating persona. Please try again.";
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error generating persona with Ollama");
-            return $"Professional AI Assistant\n\nDescription: {description}\n\nMaintain a helpful, knowledgeable, and professional tone in all interactions.";
-        }
-    }
-
-    public Task<ContentModerationResult> ModerateContentAsync(string content)
-    {
-        return Task.FromResult(new ContentModerationResult { IsFlagged = false, FlaggedCategories = new List<string>() });
-    }
+    // ── Agent tool-calling loop ──────────────────────────────────────────────
 
     public async Task<AgentLoopResult> RunWithToolsAsync(
         string systemPrompt,
@@ -386,64 +89,200 @@ public class OllamaService : IAIService
         string? modelOverride = null,
         CancellationToken ct = default)
     {
-        // Ollama does not support native function calling — fall back to plain completion
-        var result = await TestPromptAsync(new Research.Api.Models.PromptTestRequest
-        {
-            PromptContent = systemPrompt,
-            UserInput = userInput
-        });
-        var step = new AgentRunStep("output", result.Result);
-        onStep?.Invoke(step);
-        return new AgentLoopResult(result.Result, [step], result.TokensUsed, 1);
-    }
+        if (!IsAvailable) throw new InvalidOperationException("Ollama is not enabled.");
 
-    public async IAsyncEnumerable<string> StreamExecuteAsync(
-        string systemPrompt,
-        List<ConversationMessage> messages,
-        string? modelOverride,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
-    {
-        var lastUser = messages.LastOrDefault(m => m.Role == "user")?.Content ?? "";
-        var result = await TestPromptAsync(new Research.Api.Models.PromptTestRequest { PromptContent = systemPrompt, UserInput = lastUser });
-        yield return result.Result;
-    }
+        var chatClient = Chat(modelOverride);
+        var options = AzureChatOptions.For(modelOverride ?? _deploymentName, temperature: 0.7f);
 
-    private string GetStyleInstruction(string? style)
-    {
-        if (string.IsNullOrEmpty(style) || !StyleDescriptions.ContainsKey(style.ToLower()))
+        foreach (var t in tools)
+            options.Tools.Add(ChatTool.CreateFunctionTool(
+                functionName: t.Name,
+                functionDescription: t.Description,
+                functionParameters: BinaryData.FromString(t.ParametersSchema)));
+
+        if (tools.Count > 0)
+            options.ToolChoice = ChatToolChoice.CreateAutoChoice();
+
+        var chatMessages = new List<ChatMessage>();
+        if (!string.IsNullOrWhiteSpace(systemPrompt))
+            chatMessages.Add(new SystemChatMessage(systemPrompt));
+        chatMessages.Add(new UserChatMessage(userInput));
+
+        var steps = new List<AgentRunStep>();
+        var totalTokens = 0;
+
+        for (var iteration = 1; iteration <= maxIterations; iteration++)
         {
-            return StyleDescriptions["professional"];
+            var response = await chatClient.CompleteChatAsync(chatMessages, options, ct);
+            totalTokens += response.Value.Usage.TotalTokenCount;
+
+            if (response.Value.FinishReason == ChatFinishReason.ToolCalls)
+            {
+                chatMessages.Add(new AssistantChatMessage(response.Value));
+
+                foreach (var toolCall in response.Value.ToolCalls)
+                {
+                    var argsJson = toolCall.FunctionArguments.ToString();
+                    var call = new AgentToolCall(toolCall.Id, toolCall.FunctionName, argsJson);
+
+                    var callStep = new AgentRunStep("tool_call", argsJson, ToolName: toolCall.FunctionName, ToolInput: argsJson);
+                    steps.Add(callStep);
+                    onStep?.Invoke(callStep);
+
+                    string toolOutput;
+                    try { toolOutput = await toolExecutor(call); }
+                    catch (Exception ex) { toolOutput = $"Tool error: {ex.Message}"; }
+
+                    var resultStep = new AgentRunStep("tool_result", toolOutput, ToolName: toolCall.FunctionName, ToolOutput: toolOutput);
+                    steps.Add(resultStep);
+                    onStep?.Invoke(resultStep);
+
+                    chatMessages.Add(new ToolChatMessage(toolCall.Id, toolOutput));
+                }
+                continue;
+            }
+
+            var output = response.Value.Content.Count > 0 ? response.Value.Content[0].Text : string.Empty;
+            var outStep = new AgentRunStep("output", output);
+            steps.Add(outStep);
+            onStep?.Invoke(outStep);
+            return new AgentLoopResult(output, steps, totalTokens, iteration);
         }
-        return StyleDescriptions[style.ToLower()];
+
+        var maxStep = new AgentRunStep("output", "Maximum iterations reached.");
+        steps.Add(maxStep);
+        onStep?.Invoke(maxStep);
+        return new AgentLoopResult(maxStep.Content, steps, totalTokens, maxIterations);
     }
-}
 
-// Ollama API Models
-public class OllamaGenerateRequest
-{
-    public string Model { get; set; } = "";
-    public string Prompt { get; set; } = "";
-    public bool Stream { get; set; }
-}
+    // ── Prompt engineering helpers ──────────────────────────────────────────
 
-public class OllamaGenerateResponse
-{
-    public string Response { get; set; } = "";
-    public bool Done { get; set; }
-    public string Model { get; set; } = "";
-    public long? EvalCount { get; set; }
-    public long? EvalDuration { get; set; }
-}
+    public async Task<GoalSuggestionsResult> GenerateGoalSuggestionsAsync(string intent, string mode = "intent")
+    {
+        var isIntentMode = mode == "intent";
+        var systemText = isIntentMode
+            ? "You are an expert AI assistant helping users clarify what they want an AI prompt to do. " +
+              "Based on the user's description, generate 20 clear intent statements — each describing a specific PURPOSE or USE CASE for the prompt. " +
+              "Each intent should start with an action verb and describe what the AI should do. " +
+              "Also suggest the best prompt style.\n\nReturn ONLY a JSON object:\n- \"goals\": array of 20 intent strings\n- \"suggestedStyle\": one of: professional, creative, technical, conversational, persuasive\n\nNo markdown, no explanations, just the raw JSON object."
+            : "You are an expert AI assistant helping users define what they want to achieve. " +
+              "Based on the user's intent, generate 20 clear, specific goal statements AND suggest the best prompt style.\n\nReturn ONLY a JSON object:\n- \"goals\": array of 20 goal strings\n- \"suggestedStyle\": one of: professional, creative, technical, conversational, persuasive\n\nNo markdown, no explanations, just the raw JSON object.";
 
-public class OllamaTagsResponse
-{
-    public List<OllamaModel> Models { get; set; } = new();
-}
+        var msgs = new List<ChatMessage> { new SystemChatMessage(systemText), new UserChatMessage(intent) };
+        var resp = await Chat().CompleteChatAsync(msgs);
+        var raw = resp.Value.Content[0].Text;
+        var parsed = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(ExtractJson(raw));
+        var goals = System.Text.Json.JsonSerializer.Deserialize<List<string>>(parsed.GetProperty("goals").GetRawText()) ?? [];
+        var style = parsed.TryGetProperty("suggestedStyle", out var se) ? se.GetString() ?? "professional" : "professional";
+        return new GoalSuggestionsResult(goals, style);
+    }
 
-public class OllamaModel
-{
-    public string Name { get; set; } = "";
-    public string Size { get; set; } = "";
-    public string Digest { get; set; } = "";
-    public DateTime ModifiedAt { get; set; }
+    public async Task<string> GeneratePromptFromGoalsAsync(string intent, List<string> selectedGoals, string? additionalContext)
+    {
+        var goalsText = string.Join("\n", selectedGoals.Select((g, i) => $"{i + 1}. {g}"));
+        var ctx = string.IsNullOrEmpty(additionalContext) ? "" : $"\n\nAdditional Context: {additionalContext}";
+        var msgs = new List<ChatMessage>
+        {
+            new SystemChatMessage("You are an expert prompt engineer. Create a single, comprehensive, production-ready prompt that accomplishes all the selected objectives. Return ONLY the prompt text itself, no markdown, no explanations."),
+            new UserChatMessage($"Intent: {intent}\n\nGoals:\n{goalsText}{ctx}\n\nGenerate a detailed prompt addressing the intent and all objectives.")
+        };
+        var resp = await Chat().CompleteChatAsync(msgs);
+        return resp.Value.Content[0].Text;
+    }
+
+    public async Task<List<string>> GenerateRefinementSuggestionsAsync(string currentPrompt)
+    {
+        var msgs = new List<ChatMessage>
+        {
+            new SystemChatMessage("You are an expert prompt engineer. Generate 20 specific refinement suggestions for the given prompt. Return ONLY a JSON array of 20 strings, no markdown, no explanations."),
+            new UserChatMessage($"Current Prompt:\n{currentPrompt}\n\nGenerate 20 refinement suggestions.")
+        };
+        var resp = await Chat().CompleteChatAsync(msgs);
+        return System.Text.Json.JsonSerializer.Deserialize<List<string>>(ExtractJson(resp.Value.Content[0].Text)) ?? [];
+    }
+
+    public async Task<string> RefinePromptAsync(string currentPrompt, List<string> selectedRefinements, string? additionalContext)
+    {
+        var refinementsText = string.Join("\n", selectedRefinements.Select((r, i) => $"{i + 1}. {r}"));
+        var ctx = string.IsNullOrEmpty(additionalContext) ? "" : $"\n\nAdditional Instructions: {additionalContext}";
+        var msgs = new List<ChatMessage>
+        {
+            new SystemChatMessage("You are an expert prompt engineer. Apply the selected refinements to improve the prompt. Return ONLY the refined prompt text, no markdown, no explanations."),
+            new UserChatMessage($"Current Prompt:\n{currentPrompt}\n\nRefinements:\n{refinementsText}{ctx}")
+        };
+        var resp = await Chat().CompleteChatAsync(msgs);
+        return resp.Value.Content[0].Text;
+    }
+
+    public async Task<List<string>> GenerateGoalSuggestionsWithPersonaAsync(string intent, string style, string category, string? personaPrompt)
+    {
+        var personaCtx = string.IsNullOrEmpty(personaPrompt) ? "" : $"\n\nPersona: {personaPrompt}";
+        var msgs = new List<ChatMessage>
+        {
+            new SystemChatMessage("You are an expert AI assistant. Generate 20 specific goal suggestions for the given intent and persona. Return ONLY a JSON array of 20 strings, no markdown."),
+            new UserChatMessage($"Intent: {intent}\nStyle: {style}\nCategory: {category}{personaCtx}")
+        };
+        var resp = await Chat().CompleteChatAsync(msgs);
+        return System.Text.Json.JsonSerializer.Deserialize<List<string>>(ExtractJson(resp.Value.Content[0].Text)) ?? [];
+    }
+
+    public async Task<string> GeneratePromptWithPersonaAsync(string intent, List<string> selectedGoals, string? additionalContext, string? personaPrompt)
+    {
+        var goalsText = string.Join("\n", selectedGoals.Select((g, i) => $"{i + 1}. {g}"));
+        var ctx = string.IsNullOrEmpty(additionalContext) ? "" : $"\n\nAdditional Context: {additionalContext}";
+        var personaCtx = string.IsNullOrEmpty(personaPrompt) ? "" : $"\n\nPersona: {personaPrompt}";
+        var msgs = new List<ChatMessage>
+        {
+            new SystemChatMessage("You are an expert prompt engineer. Create a production-ready prompt for the intent and goals, taking the persona into account. Return ONLY the prompt text."),
+            new UserChatMessage($"Intent: {intent}\n\nGoals:\n{goalsText}{ctx}{personaCtx}")
+        };
+        var resp = await Chat().CompleteChatAsync(msgs);
+        return resp.Value.Content[0].Text;
+    }
+
+    public async Task<string> QuickRefineAsync(string currentPrompt, string refinementInstruction)
+    {
+        var msgs = new List<ChatMessage>
+        {
+            new SystemChatMessage("You are an expert prompt engineer. Apply the refinement instruction to improve the prompt. Return ONLY the refined prompt text."),
+            new UserChatMessage($"Prompt:\n{currentPrompt}\n\nRefinement: {refinementInstruction}")
+        };
+        var resp = await Chat().CompleteChatAsync(msgs);
+        return resp.Value.Content[0].Text;
+    }
+
+    public async Task<string> GeneratePersonaAsync(string description)
+    {
+        var msgs = new List<ChatMessage>
+        {
+            new SystemChatMessage("You are an expert at creating AI personas. Generate a detailed system prompt for the described persona. Return ONLY the system prompt text."),
+            new UserChatMessage(description)
+        };
+        var resp = await Chat().CompleteChatAsync(msgs);
+        return resp.Value.Content[0].Text;
+    }
+
+    public Task<string> DescribeScreenAsync(string base64Image)
+        => Task.FromResult(string.Empty);
+
+    public Task<string> TranscribeAudioAsync(Stream audioStream, string fileName)
+        => throw new NotSupportedException("Audio transcription is not supported via Ollama in this implementation.");
+
+    public Task<string> RefineTranscriptionToIntentAsync(string transcription)
+        => Task.FromResult(transcription);
+
+    public Task<ContentModerationResult> ModerateContentAsync(string content)
+        => Task.FromResult(new ContentModerationResult { IsFlagged = false });
+
+    private static string ExtractJson(string raw)
+    {
+        var text = raw.Trim();
+        if (text.StartsWith("```"))
+        {
+            var firstNewline = text.IndexOf('\n');
+            if (firstNewline >= 0) text = text[(firstNewline + 1)..];
+            if (text.EndsWith("```")) text = text[..^3].TrimEnd();
+        }
+        return text.Trim();
+    }
 }

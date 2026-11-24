@@ -12,8 +12,8 @@ npm start
 
 ## What it does
 
-**Apps tab** — all 29 apps (listed in `launcher/apps.json`; ports are read
-from each app's own config). For each one:
+**Apps tab** — all 29 apps, read from `launcher/apps.json`
+plus the three hand-built apps. For each one:
 
 - **Start** runs its backend (`dotnet run`) and frontend (`npm run dev`) on its
   own ports. It is always a fresh start: anything already holding *that app's*

@@ -21,4 +21,7 @@
     <PackageReference Include="UglyToad.PdfPig" Version="1.7.0-custom-5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="YoutubeExplode" Version="6.6.3" />
+  </ItemGroup>
 </Project>

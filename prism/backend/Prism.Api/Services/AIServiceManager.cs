@@ -53,6 +53,7 @@ public class AIServiceManager : IAIService
             "AzureOpenAI"   => 1,
             "OpenAI"        => 2,
             "AmazonBedrock" => 3,
+            "Ollama"        => 4,
             _ => 99
         };
     }

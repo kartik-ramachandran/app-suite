@@ -8,6 +8,7 @@ import { RadialAreaChart, GoalBubbleChart, RelationshipNetwork, AREA_COLORS } fr
 import LifeBalanceWheel from '../components/LifeBalanceWheel'
 import UpcomingDates from '../components/UpcomingDates'
 import LifeVoiceRecorder from '../components/LifeVoiceRecorder'
+import LifeVoiceAgent from '../components/LifeVoiceAgent'
 import LifeScenarios from '../components/LifeScenarios'
 import {
   createLifeDecision,
@@ -260,6 +261,8 @@ export default function LifeTracker() {
   })
 
   const [tab, setTab] = useState<LifeTab>('today')
+  // Bumped when the voice agent files an entry, so the recorder's list reloads.
+  const [journalKey, setJournalKey] = useState(0)
   const [goal, setGoal] = useState({ title: '', area: 'Health', targetDate: '', progress: 20, notes: '' })
   const [goalStatus, setGoalStatus] = useState<'active' | 'paused' | 'done'>('active')
   const [editingGoalId, setEditingGoalId] = useState<number | null>(null)
@@ -815,7 +818,8 @@ export default function LifeTracker() {
               <div><span>Voice journal</span><h2>Say it out loud</h2></div>
               <PhosphorIcon className="bi bi-mic-fill life-coach-mark" />
             </div>
-            <LifeVoiceRecorder onApplied={load} />
+            <LifeVoiceAgent onSaved={() => { setJournalKey(k => k + 1); load() }} />
+            <LifeVoiceRecorder key={journalKey} onApplied={load} />
           </div>
 
           <div data-tab="coach" className="life-panel">

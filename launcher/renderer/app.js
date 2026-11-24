@@ -289,7 +289,8 @@
     const s = await call('settings').catch(e => { toast(e.message, true); return null })
     if (!s) return
     $('#aiPreferred').value = s.ai.preferred
-    for (const f of ['anthropicModel', 'azureEndpoint', 'azureDeployment', 'openaiModel']) $(`#${f}`).value = s.ai[f] || ''
+    for (const f of ['anthropicModel', 'azureEndpoint', 'azureDeployment', 'openaiModel', 'ollamaUrl', 'ollamaModel']) $(`#${f}`).value = s.ai[f] || ''
+    $('#ollamaEnabled').checked = !!s.ai.ollamaEnabled
     for (const [f, has] of keyFields) {
       const input = $(`#${f}`)
       input.value = ''
@@ -300,11 +301,32 @@
     document.querySelectorAll('#aiCard input, #aiCard select, #aiCard button, #phoneEdits').forEach(n => { n.disabled = lock })
     if (lock) $('#aiSaved').textContent = 'Settings can only be changed on the computer.'
     renderPhone()
+    if (desktop && s.ai.ollamaEnabled) checkOllama()
   }
+
+  async function checkOllama() {
+    const state = $('#ollamaState')
+    state.textContent = 'Checking…'
+    state.className = 'muted small'
+    const st = await call('ollamaStatus', $('#ollamaUrl').value.trim()).catch(e => ({ running: false, error: e.message }))
+    if (!st.running) { state.textContent = st.error; state.className = 'small warn'; return }
+    const list = $('#ollamaModels')
+    list.replaceChildren(...st.models.map(m => el('option', { value: m })))
+    const want = $('#ollamaModel').value.trim() || 'llama3.2'
+    const has = st.models.some(m => m === want || m.split(':')[0] === want)
+    state.className = has ? 'small ok' : 'small warn'
+    state.textContent = st.models.length === 0
+      ? 'Running, but no models yet. Run: ollama pull llama3.2'
+      : has ? `Running · ${st.models.length} model${st.models.length === 1 ? '' : 's'} · “${want}” is ready`
+        : `Running, but “${want}” isn’t pulled. Run: ollama pull ${want}`
+  }
+  $('#ollamaCheck').addEventListener('click', guard(checkOllama))
 
   $('#saveAi').addEventListener('click', guard(async () => {
     const ai = { preferred: $('#aiPreferred').value }
-    for (const f of ['anthropicModel', 'azureEndpoint', 'azureDeployment', 'openaiModel']) ai[f] = $(`#${f}`).value.trim()
+    for (const f of ['anthropicModel', 'azureEndpoint', 'azureDeployment', 'openaiModel', 'ollamaUrl', 'ollamaModel']) ai[f] = $(`#${f}`).value.trim()
+    ai.ollamaEnabled = $('#ollamaEnabled').checked
+    if (ai.preferred === 'Ollama' && !ai.ollamaEnabled) { ai.ollamaEnabled = true; $('#ollamaEnabled').checked = true }
     for (const [f] of keyFields) { const v = $(`#${f}`).value.trim(); if (v) ai[f] = v }
     await call('saveSettings', { ai })
     $('#aiSaved').textContent = 'Saved.'

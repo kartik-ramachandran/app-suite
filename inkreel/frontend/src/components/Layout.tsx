@@ -50,6 +50,9 @@ export default function Layout({ children }: { children: ReactNode }) {
             <NavLink to="/video" className={({ isActive }) => `tm-nav-link${isActive ? ' tm-nav-active' : ''}`}>
               <PhosphorIcon className="bi bi-camera-video-fill" /> Video Studio
             </NavLink>
+            <NavLink to="/chat" className={({ isActive }) => `tm-nav-link${isActive ? ' tm-nav-active' : ''}`}>
+              <PhosphorIcon className="bi bi-chat-square-quote" /> Chat with a source
+            </NavLink>
           </nav>
           <div className="tm-user">
             {user?.name && <span className="tm-user-name">{user.name}</span>}
